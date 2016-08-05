@@ -16,15 +16,16 @@ import RNBluetoothIO from 'react-native-bluetooth-io';
 
 class BluetoothIOExample extends Component {
   render() {
-    console.log(RNBluetoothIO.getBuildNumber());
-    
+    console.log("RNBluetoothIO:", RNBluetoothIO);
+    console.log(RNBluetoothIO.function1());
+
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
           Welcome to BluetoothIOExample!
         </Text>
         <Text style={styles.instructions}>
-          Version: {RNBluetoothIO.getBuildNumber()}
+          sayHello: {RNBluetoothIO.sayHello("Eduardo")}
         </Text>
         <Text style={styles.instructions}>
           Double tap R on your keyboard to reload,{'\n'}
