@@ -30,7 +30,7 @@ module.exports = {
     return RNBluetoothIO.bundleId;
   },
   getBuildNumber: function() {
-    return RNBluetoothIO.buildNumber;
+    return "RNBluetoothIO.buildNumber";
   },
   getVersion: function() {
     return RNBluetoothIO.appVersion;

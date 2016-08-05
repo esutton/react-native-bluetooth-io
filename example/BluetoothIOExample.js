@@ -12,15 +12,19 @@ import {
   View
 } from 'react-native';
 
+import RNBluetoothIO from 'react-native-bluetooth-io';
+
 class BluetoothIOExample extends Component {
   render() {
+    console.log(RNBluetoothIO.getBuildNumber());
+    
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
           Welcome to BluetoothIOExample!
         </Text>
         <Text style={styles.instructions}>
-          To get started, edit index.android.js
+          Version: {RNBluetoothIO.getBuildNumber()}
         </Text>
         <Text style={styles.instructions}>
           Double tap R on your keyboard to reload,{'\n'}
