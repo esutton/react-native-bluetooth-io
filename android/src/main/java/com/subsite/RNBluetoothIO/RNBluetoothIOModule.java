@@ -8,8 +8,17 @@ import android.provider.Settings.Secure;
 
 import com.google.android.gms.iid.InstanceID;
 
+
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import java.util.HashMap;
 import java.util.Locale;
