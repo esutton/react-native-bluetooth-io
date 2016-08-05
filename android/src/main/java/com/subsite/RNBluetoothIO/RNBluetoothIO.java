@@ -17,9 +17,7 @@ public class RNBluetoothIO implements ReactPackage {
   public List<NativeModule> createNativeModules(
                               ReactApplicationContext reactContext) {
     List<NativeModule> modules = new ArrayList<>();
-
-    modules.add(new RNDeviceModule(reactContext));
-
+    modules.add(new RNBluetoothIO(reactContext));
     return modules;
   }
 
