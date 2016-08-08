@@ -47,12 +47,8 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
       promise.resolve("Hello " + name);
     } catch (Exception ex) {
       ex.printStackTrace();
-      reject(promise, name, ex);
+      promise.reject(ex);
     }
-  }
-
-  private void reject(Promise promise, String name, Exception ex) {
-    promise.reject(ex.getMessage());
   }
 
 }
