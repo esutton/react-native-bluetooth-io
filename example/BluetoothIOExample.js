@@ -1,8 +1,8 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
+* Sample React Native App
+* https://github.com/facebook/react-native
+* @flow
+*/
 
 import React, { Component } from 'react';
 import {
@@ -19,18 +19,23 @@ class BluetoothIOExample extends Component {
     console.log("RNBluetoothIO:", BluetoothIO);
     //console.log(BluetoothIO.function1());
 
+    // Get Local IP
+    BluetoothIO.getIPAddress(ip => {
+      console.log("BluetoothIO.getIPAddress:", ip);
+    });
+
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to BluetoothIOExample!
-        </Text>
-        <Text style={styles.instructions}>
-          sayHello: {BluetoothIO.getGreeting()}
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
+      <Text style={styles.welcome}>
+      Welcome to BluetoothIOExample!
+      </Text>
+      <Text style={styles.instructions}>
+      sayHello: {BluetoothIO.getGreeting()}
+      </Text>
+      <Text style={styles.instructions}>
+      Double tap R on your keyboard to reload,{'\n'}
+      Shake or press menu button for dev menu
+      </Text>
       </View>
     );
   }

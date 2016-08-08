@@ -39,7 +39,9 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
 
   @Override
   public String getName() {
-    return "RNBluetoothIO";
+    // This must match the name used in JS index.js
+    // var BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
+    return "BluetoothIOModule";
   }
 
   @ReactMethod
@@ -57,6 +59,16 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
   public void getIPAddress(final Callback callback) {
     String ipAddressString = "10.9.8.7";
     callback.invoke(ipAddressString);
+  }
+
+  @ReactMethod
+  public void exists(String filepath, Promise promise) {
+    try {
+      promise.resolve(true);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      promise.reject(ex);
+    }
   }
 
 }
