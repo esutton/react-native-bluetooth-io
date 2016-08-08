@@ -1,4 +1,4 @@
-package com.subsite.RNBluetoothIO;
+package com.subsite.bluetoothio;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.pm.PackageInfo;

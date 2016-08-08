@@ -1,4 +1,4 @@
-package com.subsite.RNBluetoothIO;
+package com.subsite.bluetoothio;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -11,13 +11,13 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.bridge.JavaScriptModule;
 
-public class RNBluetoothIO implements ReactPackage {
+public class BluetoothIOPackage implements ReactPackage {
 
   @Override
   public List<NativeModule> createNativeModules(
                               ReactApplicationContext reactContext) {
     List<NativeModule> modules = new ArrayList<>();
-    modules.add(new RNBluetoothIOModule(reactContext));
+    modules.add(new BluetoothIOModule(reactContext));
     return modules;
   }
 
