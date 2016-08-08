@@ -16,8 +16,8 @@ import BluetoothIO from 'react-native-bluetooth-io';
 
 class BluetoothIOExample extends Component {
   render() {
-    console.log("RNBluetoothIO:", RNBluetoothIO);
-    console.log(RNBluetoothIO.function1());
+    console.log("RNBluetoothIO:", BluetoothIO);
+    //console.log(BluetoothIO.function1());
 
     return (
       <View style={styles.container}>

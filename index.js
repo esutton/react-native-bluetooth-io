@@ -4,8 +4,6 @@
 
 var BluetoothIOPackage = require('react-native').NativeModules.BluetoothIOPackage;
 
-var RNFSManager = require('react-native').NativeModules.RNFSManager;
-
 var BluetoothIO = {
 
   sayHello(name: string): Promise<string> {
