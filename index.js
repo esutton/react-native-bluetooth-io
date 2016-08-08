@@ -2,6 +2,7 @@
  * @providesModule react-native-bluetooth-io
  */
 
+// NativeModules.<Name> must match name returned by ReactContextBaseJavaModule::getName in java code
 var BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
 
 var BluetoothIO  = {
