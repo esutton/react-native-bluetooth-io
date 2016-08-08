@@ -9,6 +9,7 @@ import android.provider.Settings.Secure;
 //import com.google.android.gms.iid.InstanceID;
 
 
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -49,6 +50,13 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
       ex.printStackTrace();
       promise.reject(ex);
     }
+  }
+
+  @ReactMethod
+  // callback test
+  public void getIPAddress(final Callback callback) {
+    String ipAddressString = "10.9.8.7";
+    callback.invoke(ipAddressString);
   }
 
 }
