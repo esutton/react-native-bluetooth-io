@@ -6,7 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings.Secure;
 
-import com.google.android.gms.iid.InstanceID;
+//import com.google.android.gms.iid.InstanceID;
 
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -51,8 +51,8 @@ public class RNBluetoothIOModule extends ReactContextBaseJavaModule {
     }
   }
 
-  private void reject(Promise promise, String filepath, Exception ex) {
-    promise.reject(null, ex.getMessage());
+  private void reject(Promise promise, String name, Exception ex) {
+    promise.reject(ex.getMessage());
   }
 
 }
