@@ -2,16 +2,16 @@
  * @providesModule react-native-bluetooth-io
  */
 
-var RNBluetoothIO = require('react-native').NativeModules.RNBluetoothIO;
+var BluetoothIOPackage = require('react-native').NativeModules.BluetoothIOPackage;
 
-module.exports = {
+var RNFSManager = require('react-native').NativeModules.RNFSManager;
 
-  function1(): {
-    return "Called function1";
-  },
+var BluetoothIO = {
 
   sayHello(name: string): Promise<string> {
-    return RNBluetoothIO.sayHello(name);
+    return BluetoothIOPackage.sayHello(name);
   },
 
 };
+
+module.exports = BluetoothIO;

@@ -27,11 +27,11 @@ import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
-public class RNBluetoothIOModule extends ReactContextBaseJavaModule {
+public class BluetoothIOModule extends ReactContextBaseJavaModule {
 
   ReactApplicationContext reactContext;
 
-  public RNBluetoothIOModule(ReactApplicationContext reactContext) {
+  public BluetoothIOModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
   }

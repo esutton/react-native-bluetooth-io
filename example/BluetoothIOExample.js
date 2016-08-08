@@ -12,7 +12,7 @@ import {
   View
 } from 'react-native';
 
-import RNBluetoothIO from 'react-native-bluetooth-io';
+import BluetoothIO from 'react-native-bluetooth-io';
 
 class BluetoothIOExample extends Component {
   render() {
@@ -25,7 +25,7 @@ class BluetoothIOExample extends Component {
           Welcome to BluetoothIOExample!
         </Text>
         <Text style={styles.instructions}>
-          sayHello: {RNBluetoothIO.sayHello("Eduardo")}
+          sayHello: {BluetoothIO.sayHello("Eduardo")}
         </Text>
         <Text style={styles.instructions}>
           Double tap R on your keyboard to reload,{'\n'}
