@@ -51,4 +51,8 @@ public class RNBluetoothIOModule extends ReactContextBaseJavaModule {
     }
   }
 
+  private void reject(Promise promise, String filepath, Exception ex) {
+    promise.reject(null, ex.getMessage());
+  }
+
 }
