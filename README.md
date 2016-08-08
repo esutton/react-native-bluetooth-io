@@ -5,7 +5,7 @@ React native bridge module for Bluetooth.
 1. Android ( In progress )
 2. iOS ( not implemented )
 
-Started project by using react-native-deviceinfo as boilerplate.
+Model project structure after: https://github.com/lwansbrough/react-native-camera
 
 ## react-native-bluetooth-io
 

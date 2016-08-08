@@ -12,14 +12,14 @@ buildscript {
     }
 }
 
+// Model project after: https://github.com/lwansbrough/react-native-camera
+
 allprojects {
     repositories {
         mavenLocal()
         jcenter()
         maven {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            //url "$rootDir/../node_modules/react-native/android"
-            // Model after: https://github.com/lwansbrough/react-native-camera/blob/master/Example/android/build.gradle
             url "$projectDir/../../node_modules/react-native/android"
         }
     }
