@@ -24,6 +24,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import java.util.ArrayList;
@@ -33,12 +34,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-
+import java.util.UUID;
 
 
 import javax.annotation.Nullable;
 
 public class BluetoothIOModule extends ReactContextBaseJavaModule {
+
+  // SPP UUID
+  // BluetoothSocket socket = device.createRfcommSocketToServiceRecord(SPP_UUID);
+  private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
   ReactApplicationContext reactContext;
 
@@ -48,44 +53,59 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
 
   public BluetoothIOModule(ReactApplicationContext reactContext) {
     super(reactContext);
+
+    final ReactApplicationContext ctx = reactContext;
   }
 
   @Override
   public String getName() {
-    // This must match the name used in JS index.js
+    // name must match ame used in JS index.js require statement.
     // var BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
     return TAG;
   }
 
-  @ReactMethod
-  public void sayHello(String name, Promise promise) {
-    try {
-      promise.resolve("Hello " + name);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      promise.reject(ex);
-    }
+  private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
+    reactContext
+    .getJSModule(RCTNativeAppEventEmitter.class)
+    .emit(eventName, params);
   }
 
-  @ReactMethod
+
+  // Raise event onDataRx
+  // Need to Base64 encode ( See react WebSocketModule.java )
+  private void emitOnDataRx(String data) {
+
+    // if (payloadType == WebSocket.PayloadType.BINARY) {
+    //   message = Base64.encodeToString(bufferedSource.readByteArray(), Base64.NO_WRAP);
+    // } else {
+    //   message = bufferedSource.readUtf8();
+    // }
+
+    WritableMap params = Arguments.createMap();
+    params.putString("data", data);
+    sendEvent(getReactApplicationContext(), "onDataRx", params);
+  }
+
+  //@ReactMethod
   // callback test
-  public void getIPAddress(final Callback callback) {
-    String ipAddressString = "10.9.8.7";
+  // public void getIPAddress(final Callback callback) {
+  //   String ipAddressString = "10.9.8.7";
+  //
+  //   getPairedBluetooth();
+  //
+  //   callback.invoke(ipAddressString);
+  // }
 
-    getPairedBluetooth();
+  // @ReactMethod
+  // public void exists(String filepath, Promise promise) {
+  //   try {
+  //     promise.resolve(true);
+  //   } catch (Exception ex) {
+  //     ex.printStackTrace();
+  //     promise.reject(ex);
+  //   }
+  // }
 
-    callback.invoke(ipAddressString);
-  }
-
-  @ReactMethod
-  public void exists(String filepath, Promise promise) {
-    try {
-      promise.resolve(true);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      promise.reject(ex);
-    }
-  }
 
   // http://www.programcreek.com/java-api-examples/index.php?class=android.bluetooth.BluetoothAdapter&method=getBondedDevices
   // private void updateBondedBluetoothDevices() {
@@ -139,7 +159,6 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
         //         for (ParcelUuid uuid: uuidArray) {
         //           Log.d(TAG, "UUID: " + uuid.getUuid().toString());
         //         }
-
 
           deviceArray.pushMap(bluetoothDeviceMap);
        }
@@ -207,5 +226,19 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     return deviceNames;
   }
 
+  @ReactMethod
+  public void writeString(String data, Promise promise) {
+    try {
+      Log.d(TAG, String.format("write[%d]={%s}", data.length(), data));
+
+      // Debug event emitOnDataRx
+      emitOnDataRx(data);
+
+      //promise.resolve(data.length());
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      //promise.reject(ex);
+    }
+  }
 
 }

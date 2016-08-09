@@ -5,7 +5,10 @@
 */
 
 import React, { Component } from 'react';
+
+
 import {
+  Alert,
   AppRegistry,
   ListView,
   StyleSheet,
@@ -15,7 +18,6 @@ import {
 } from 'react-native';
 
 import BluetoothIO from 'react-native-bluetooth-io';
-
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 // Declare this before React.createClass:
@@ -43,27 +45,28 @@ var BluetoothIOExample = React.createClass({
 
     // the action setUnitType is changing store state
     // however, the prop.state change is not being reflected back to here
-    //dataSource: ds.cloneWithRows([]),
-    //deviceList: [],
+
     return {
       bluetoothState: 0x00000000,
-    };
+      dataSource: ds.cloneWithRows([]),
+      deviceList: [],    };
   },
 
 
   scanBluetooth() {
-    // console.log("BluetoothIOExample:componentDidMount");
-    // BluetoothIO.getDeviceList("TK")
-    // .then((deviceList) => {
-    //   console.log('BluetoothIO.getDeviceList: ', deviceList);
-    //   this.setState = {
-    //     deviceList: result,
-    //     dataSource: ds.cloneWithRows(deviceList),
-    //   };
-    // })
-    // .catch((err) => {
-    //   console.log(err.message);
-    // });
+    console.log("BluetoothIOExample:scanBluetooth");
+
+    BluetoothIO.getDeviceList("TK")
+    .then((deviceList) => {
+      console.log('BluetoothIO.getDeviceList: ', deviceList);
+      this.setState({
+        deviceList: deviceList,
+        dataSource: ds.cloneWithRows(deviceList),
+      });
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 
     // Check if Bluetooth is ON
     BluetoothIO.getState()
@@ -85,33 +88,81 @@ var BluetoothIOExample = React.createClass({
   },
 
   componentDidMount() {
+    BluetoothIO.listenerAdd(this.onDataRx);
     this.onScan();
+  },
+
+  onDataRx(e: Event) {
+    console.log('onDataRx:', e);
   },
 
   onScan() {
     this.scanBluetooth();
   },
 
+  onSend() {
+      BluetoothIO.writeString("GETINFO\r\n")
+  },
+
+  renderHeader() {
+    return (
+      <View>
+      <Text>Paired Devices</Text>
+      </View>
+    );
+  },
+
+  renderSectionHeader() {
+    return (
+      <View>
+      <Text>Other Available Devices</Text>
+      </View>
+    );
+  },
+
+  renderSeparator(
+    sectionID: number | string,
+    rowID: number | string,
+    adjacentRowHighlighted: boolean
+  ) {
+    var style = styles.rowSeparator;
+    if (adjacentRowHighlighted) {
+      style = [style, styles.rowSeparatorHide];
+    }
+    return (
+      <View key={'SEP_' + sectionID + '_' + rowID}  style={style}/>
+    );
+  },
+
+  onRowPress(device: Object) {
+    Alert.alert('onRowPress ' + device.name);
+  },
+
+
+  renderRow(device: Object) {
+    var chevronIcon = <Icon name="chevron-right" size={20} ></Icon>;
+
+    return (
+      <View style={styles.row}>
+
+      <TouchableHighlight style={styles.row}
+      onPress={() => this.onRowPress(device) }
+      onShowUnderlay={this.props.onHighlight}
+      onHideUnderlay={this.props.onUnhighlight}>
+
+      <View style={styles.row}>
+      <Text style={styles.welcome}>{device.name + ', ' + device.address}</Text>
+      {chevronIcon}
+      </View>
+
+      </TouchableHighlight>
+
+      </View >
+    );
+  },
+
   render() {
     console.log("BluetoothIOExample:render");
-
-    // BluetoothIO.getDeviceList returns:
-    // [
-    // { name: 'TK_0003', address: '00:07:80:46:87:CD' },
-    // { name: 'TK_0100', address: '00:07:80:A1:17:69' },
-    // { name: 'BlueStar GNSS 18300008', address: '00:07:80:0D:21:0E' }
-    // ]
-    // BluetoothIO.getDeviceList("TK")
-    // .then((deviceList) => {
-    //    console.log('BluetoothIO.getDeviceList: ', deviceList);
-    //    this.state = {
-    //      deviceList: result,
-    //      dataSource: ds.cloneWithRows(deviceList),
-    //    };
-    // })
-    // .catch((err) => {
-    //   console.log(err.message);
-    // });
 
     let bluetoothStateString = '0x' + this.state.bluetoothState.toString(16);
     console.log('this.state= ', this.state);
@@ -131,15 +182,43 @@ var BluetoothIOExample = React.createClass({
       </View>
       </TouchableHighlight>
 
+      <TouchableHighlight style={styles.row}
+      onPress={this.onSend} >
+      <View style={styles.row} >
+
+      <Icon name='send' size={20}  color='black'>
+      </Icon>
+      <Text style={styles.welcome}>
+      Send
+      </Text>
+      </View>
+      </TouchableHighlight>
+
       <Text style={styles.welcome}>
       Bluetooth State: {bluetoothStateString}
       </Text>
       <Text style={styles.instructions}>
-      sayHello: {BluetoothIO.getGreeting()}
+      Device List
       </Text>
-      <Text style={styles.instructions}>
-      XYZZZ
-      </Text>
+
+      <View style={styles.listContainer}>
+      <ListView
+      ref="listview"
+      style={styles.list}
+      renderSeparator={this.renderSeparator}
+      dataSource={this.state.dataSource}
+      renderHeader={this.renderHeader}
+      renderSectionHeader={this.renderSectionHeader}
+      renderRow={this.renderRow}
+      //renderFooter={this.renderFooter}
+      automaticallyAdjustContentInsets={false}
+      keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps={true}
+      showsVerticalScrollIndicator={false}
+      enableEmptySections
+      />
+      </View>
+
       </View>
     );
   },
@@ -162,6 +241,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333333',
     marginBottom: 5,
+  },
+  listContainer: {
+    flex: 1,
+  },
+  list: {
+    marginTop: 4,
+    backgroundColor: '#eeeeee',
   },
   row: {
     alignItems: 'center',

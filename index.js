@@ -11,26 +11,34 @@ type BluetoothDeviceInfo = {
   address: string;
 };
 
+var DeviceEventEmitter = require('react-native').DeviceEventEmitter;
+var listeners = {};
+var onDataRxEvent = "onDataRx";
+
 var BluetoothIO  = {
-
-  sayHello(name: string): Promise<string> {
-    return BluetoothIOModule.sayHello(name);
-  },
-
-  getGreeting() {
-    return "Hello Eddie";
-  },
-
-  getIPAddress(ip) {
-    BluetoothIOModule.getIPAddress(ip);
-  },
 
   versionInfo() {
     return "Version 0.0.0";
   },
 
-  exists(filepath: string): Promise<boolean> {
-    return BluetoothIOModule.exists(filepath);
+  listenerAdd(cb) {
+    listeners[cb] = DeviceEventEmitter.addListener(onDataRxEvent,
+      (messageRx) => {
+        cb(messageRx);
+      });
+  },
+
+  listenerRemove(cb) {
+    if (!listeners[cb]) {
+      return;
+    }
+    listeners[cb].remove();
+    listeners[cb] = null;
+  },
+
+  // Returns number of bytes written
+  writeString(data: string): Promise<number> {
+    return BluetoothIOModule.writeString(data);
   },
 
   // 08-09 08:57:59.423 25258 25435 I ReactNativeJS: 'BluetoothIO.getDeviceList result: ', [ { name: 'TK_0003', address: '00:07:80:46:87:CD' },
