@@ -125,7 +125,15 @@ android {
     }
 }
 
+/* Add fonts to use with react-native-vector-icons */
+project.ext.vectoricons = [
+    iconFontNames: [ 'MaterialIcons.ttf', 'EvilIcons.ttf' ]
+]
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+
 dependencies {
+    compile project(':react-native-vector-icons')
     compile project(':react-native-bluetooth-io')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:23.0.1"

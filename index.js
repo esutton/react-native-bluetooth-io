@@ -45,6 +45,10 @@ var BluetoothIO  = {
     });
   },
 
+  getState(): Promise<number> {
+    return BluetoothIOModule.getState();
+  },
+
 };
 
 module.exports = BluetoothIO;

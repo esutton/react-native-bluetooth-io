@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.ParcelUuid;
 import android.provider.Settings.Secure;
 import android.util.Log;
 
@@ -47,7 +48,6 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
 
   public BluetoothIOModule(ReactApplicationContext reactContext) {
     super(reactContext);
-    this.reactContext = reactContext;
   }
 
   @Override
@@ -111,15 +111,15 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
       Log.d(TAG, "getDeviceList: deviceNameFilter = " + deviceNameFilter);
       WritableArray deviceArray = Arguments.createArray();
 
-      BluetoothAdapter mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-      if (mBtAdapter == null) {
+      BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+      if (bluetoothAdapter == null) {
         Log.d(TAG, "BluetoothAdapter not found");
         promise.resolve(deviceArray);
         return;
       }
 
       // http://www.programcreek.com/java-api-examples/index.php?class=android.bluetooth.BluetoothAdapter&method=getBondedDevices
-      Set<BluetoothDevice> deviceSet = mBtAdapter.getBondedDevices();
+      Set<BluetoothDevice> deviceSet = bluetoothAdapter.getBondedDevices();
       if (deviceSet == null || deviceSet.size() == 0) {
         Log.d(TAG, "getBondedDevices not found");
         promise.resolve(deviceArray);
@@ -132,6 +132,15 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
           WritableMap bluetoothDeviceMap = Arguments.createMap();
           bluetoothDeviceMap.putString("name", bluetoothDevice.getName());
           bluetoothDeviceMap.putString("address", bluetoothDevice.getAddress());
+
+         // getUuids does not start a service discovery procedure to retrieve the UUIDs
+         // from the remote device. Instead, the local cached copy of the service UUIDs are returned.
+        //         ParcelUuid[] uuidArray = (ParcelUuid[]) bluetoothDevice.getUuids();
+        //         for (ParcelUuid uuid: uuidArray) {
+        //           Log.d(TAG, "UUID: " + uuid.getUuid().toString());
+        //         }
+
+
           deviceArray.pushMap(bluetoothDeviceMap);
        }
        promise.resolve(deviceArray);
@@ -142,6 +151,31 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     }
   }
 
+  @ReactMethod
+  public void getState(Promise promise) {
+    try {
+      Log.d(TAG, "getState");
+      int state = 0;
+
+      BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+      if (bluetoothAdapter == null) {
+        Log.d(TAG, "BluetoothAdapter not found");
+        promise.resolve(state);
+        return;
+      }
+
+      // Possible return values are STATE_OFF, STATE_TURNING_ON, STATE_ON, STATE_TURNING_OFF.
+      state = bluetoothAdapter.getState();
+      Log.d(TAG, "BluetoothAdapter state: 0x" + Integer.toHexString(state));
+      promise.resolve(state);
+
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      promise.reject(ex);
+    }
+  }
+
+
 
 
   public static String[] getPairedBluetooth() {
@@ -149,13 +183,13 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     Log.d(TAG, "getPairedBluetooth");
 
 
-    BluetoothAdapter mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-    if (mBtAdapter == null) {
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    if (bluetoothAdapter == null) {
       Log.d(TAG, "BluetoothAdapter not found");
       return new String[0];
     }
 
-    Set<BluetoothDevice> devices = mBtAdapter.getBondedDevices();
+    Set<BluetoothDevice> devices = bluetoothAdapter.getBondedDevices();
     if (devices == null || devices.size() == 0) {
       Log.d(TAG, "getBondedDevices not found");
       return new String[0];
