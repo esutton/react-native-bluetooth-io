@@ -86,7 +86,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
       promise.reject(ex);
     }
   }
-  
+
   // http://www.programcreek.com/java-api-examples/index.php?class=android.bluetooth.BluetoothAdapter&method=getBondedDevices
   // private void updateBondedBluetoothDevices() {
   //     m_bondedDevices.clear();
@@ -103,6 +103,46 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
   //         }
   //     }
   // }
+
+  @ReactMethod
+  public void getDeviceList(String deviceNameFilter, Promise promise) {
+
+    try {
+      Log.d(TAG, "getDeviceList: deviceNameFilter = " + deviceNameFilter);
+      WritableArray deviceArray = Arguments.createArray();
+
+      BluetoothAdapter mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+      if (mBtAdapter == null) {
+        Log.d(TAG, "BluetoothAdapter not found");
+        promise.resolve(deviceArray);
+        return;
+      }
+
+      // http://www.programcreek.com/java-api-examples/index.php?class=android.bluetooth.BluetoothAdapter&method=getBondedDevices
+      Set<BluetoothDevice> deviceSet = mBtAdapter.getBondedDevices();
+      if (deviceSet == null || deviceSet.size() == 0) {
+        Log.d(TAG, "getBondedDevices not found");
+        promise.resolve(deviceArray);
+        return;
+      }
+       for(BluetoothDevice bluetoothDevice: deviceSet){
+         Log.d(TAG, "BluetoothDevice: " + bluetoothDevice.getName()
+         + ", " + bluetoothDevice.getAddress());
+
+          WritableMap bluetoothDeviceMap = Arguments.createMap();
+          bluetoothDeviceMap.putString("name", bluetoothDevice.getName());
+          bluetoothDeviceMap.putString("address", bluetoothDevice.getAddress());
+          deviceArray.pushMap(bluetoothDeviceMap);
+       }
+       promise.resolve(deviceArray);
+
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      promise.reject(ex);
+    }
+  }
+
+
 
   public static String[] getPairedBluetooth() {
 

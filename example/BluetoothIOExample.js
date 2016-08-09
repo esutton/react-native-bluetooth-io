@@ -24,6 +24,15 @@ class BluetoothIOExample extends Component {
       console.log("BluetoothIO.getIPAddress:", ip);
     });
 
+    BluetoothIO.getDeviceList("TK")
+    .then((result) => {
+       console.log('BluetoothIO.getDeviceList result: ', result);
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });    
+
+
     return (
       <View style={styles.container}>
       <Text style={styles.welcome}>
