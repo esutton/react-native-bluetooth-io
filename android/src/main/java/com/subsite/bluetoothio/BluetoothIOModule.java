@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.os.ParcelUuid;
 import android.provider.Settings.Secure;
 import android.util.Log;
@@ -51,10 +53,21 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
 
   private Set<BluetoothDevice> m_bondedDevices = new HashSet<BluetoothDevice>();
 
+  // Name of the connected device
+  private String mConnectedDeviceName = null;
+
+  // Member object for the chat services
+  private BluetoothChatService mChatService = null;
+
   public BluetoothIOModule(ReactApplicationContext reactContext) {
     super(reactContext);
 
     final ReactApplicationContext ctx = reactContext;
+
+    // Initialize the BluetoothChatService to perform bluetooth connections
+    //mChatService = new BluetoothChatService(getActivity(), mHandler);
+    mChatService = new BluetoothChatService(null, null);
+
   }
 
   @Override
@@ -63,6 +76,57 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     // var BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
     return TAG;
   }
+
+  // // The Handler that gets information back from the BluetoothChatService
+  // private final Handler mHandler = new Handler() {
+  //
+  //   @Override
+  //   public void handleMessage(Message msg) {
+  //     //FragmentActivity activity = getActivity();
+  //
+  //     switch (msg.what) {
+  //       case Constants.MESSAGE_STATE_CHANGE:
+  //       switch (msg.arg1) {
+  //         case BluetoothChatService.STATE_CONNECTED:
+  //         //mConversationArrayAdapter.clear();
+  //         Log.d(TAG, "BluetoothChatService connected to " + "deviceName");
+  //         break;
+  //         case BluetoothChatService.STATE_CONNECTING:
+  //         Log.d(TAG, "BluetoothChatService connecting");
+  //         break;
+  //         case BluetoothChatService.STATE_LISTEN:
+  //         case BluetoothChatService.STATE_NONE:
+  //         Log.d(TAG, "BluetoothChatService not connected");
+  //         break;
+  //       }
+  //       break;
+  //       case Constants.MESSAGE_WRITE:
+  //       byte[] writeBuf = (byte[]) msg.obj;
+  //       // construct a string from the buffer
+  //       String writeMessage = new String(writeBuf);
+  //       Log.d(TAG, "Tx: " + writeMessage);
+  //       break;
+  //       case Constants.MESSAGE_READ:
+  //       byte[] readBuf = (byte[]) msg.obj;
+  //       // construct a string from the valid bytes in the buffer
+  //       String readMessage = new String(readBuf, 0, msg.arg1);
+  //       Log.d(TAG, "Rx: " + readMessage);
+  //       break;
+  //       case Constants.MESSAGE_DEVICE_NAME:
+  //       // save the connected device's name
+  //       mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
+  //       Log.d(TAG, "Connected to " + mConnectedDeviceName);
+  //       break;
+  //
+  //       case Constants.MESSAGE_TOAST:
+  //         Log.d(TAG, msg.getData().getString(Constants.TOAST));
+  //       break;
+  //     }
+  //   }
+  // };
+
+
+  ////////////////////////////////////////////////////////////////////////
 
   private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
     reactContext
@@ -145,24 +209,24 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
         promise.resolve(deviceArray);
         return;
       }
-       for(BluetoothDevice bluetoothDevice: deviceSet){
-         Log.d(TAG, "BluetoothDevice: " + bluetoothDevice.getName()
-         + ", " + bluetoothDevice.getAddress());
+      for(BluetoothDevice bluetoothDevice: deviceSet){
+        Log.d(TAG, "BluetoothDevice: " + bluetoothDevice.getName()
+        + ", " + bluetoothDevice.getAddress());
 
-          WritableMap bluetoothDeviceMap = Arguments.createMap();
-          bluetoothDeviceMap.putString("name", bluetoothDevice.getName());
-          bluetoothDeviceMap.putString("address", bluetoothDevice.getAddress());
+        WritableMap bluetoothDeviceMap = Arguments.createMap();
+        bluetoothDeviceMap.putString("name", bluetoothDevice.getName());
+        bluetoothDeviceMap.putString("address", bluetoothDevice.getAddress());
 
-         // getUuids does not start a service discovery procedure to retrieve the UUIDs
-         // from the remote device. Instead, the local cached copy of the service UUIDs are returned.
+        // getUuids does not start a service discovery procedure to retrieve the UUIDs
+        // from the remote device. Instead, the local cached copy of the service UUIDs are returned.
         //         ParcelUuid[] uuidArray = (ParcelUuid[]) bluetoothDevice.getUuids();
         //         for (ParcelUuid uuid: uuidArray) {
         //           Log.d(TAG, "UUID: " + uuid.getUuid().toString());
         //         }
 
-          deviceArray.pushMap(bluetoothDeviceMap);
-       }
-       promise.resolve(deviceArray);
+        deviceArray.pushMap(bluetoothDeviceMap);
+      }
+      promise.resolve(deviceArray);
 
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -242,3 +306,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
   }
 
 }
+
+/////////////////////////////////////////////////////////////////
+// B l u e T o o t h
+/////////////////////////////////////////////////////////////////
