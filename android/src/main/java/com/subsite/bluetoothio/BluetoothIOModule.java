@@ -316,6 +316,13 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     }
   }
 
+  private String mapGetString(ReadableMap readableMap, String key) {
+    if (readableMap.hasKey(key)) {
+      return readableMap.getString(key);
+    }
+    return "";
+  }
+
   @ReactMethod
   public void connect(ReadableMap bluetoothDevice, boolean secure) {
 
@@ -330,23 +337,15 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     //public synchronized void connect(BluetoothDevice device, boolean secure)
     try {
 
-      String name = "";
-      String address = "";
-      if (false == bluetoothDevice.hasKey("name")) {
-        name = bluetoothDevice.getString("name");
-      }
-      if (false == bluetoothDevice.hasKey("address")) {
-        address = bluetoothDevice.getString("title");
-      }
-      Log.d(TAG, String.format("connect to bluetoothDevice: %s, %s", name, address));
+      String name = mapGetString(bluetoothDevice, "name");
+      String address = mapGetString(bluetoothDevice, "address");
+      Log.d(TAG, String.format("connect to bluetoothDevice: %s, {%s}", name, address));
 
-
-      // Get the device MAC address
-      // String address = data.getExtras()
-      //         .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-
-      // Get the BluetoothDevice object
       BluetoothAdapter bluetoothAdapter = mChatService.bluetoothAdapter();
+
+      boolean isValid = bluetoothAdapter.checkBluetoothAddress(address);
+      Log.d(TAG, String.format("checkBluetoothAddress: %s", isValid ? "true" : "false"));
+
       BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
       mChatService.connect(device, secure);
 

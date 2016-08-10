@@ -32,6 +32,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -508,7 +509,9 @@ public class BluetoothChatService {
                     bytes = mmInStream.read(buffer);
 
                     // Receieved data
-                    Log.e(TAG,  String.format("ConnectedThread Rx %d bytes", bytes));
+                    Log.e(TAG,  String.format("ConnectedThread Rx[%d]={%s}",
+                    bytes,
+                    new String(buffer, "UTF-8")));
 
                     // Send the obtained bytes to the UI Activity
                     // mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
