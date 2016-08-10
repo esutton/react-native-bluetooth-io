@@ -135,7 +135,10 @@ var BluetoothIOExample = React.createClass({
   },
 
   onRowPress(device: Object) {
-    Alert.alert('onRowPress ' + device.name);
+    Alert.alert('onRowPress ' + device.name + ', ' + device.address);
+
+    let secure = false;
+    BluetoothIO.connect(device, secure);
   },
 
 

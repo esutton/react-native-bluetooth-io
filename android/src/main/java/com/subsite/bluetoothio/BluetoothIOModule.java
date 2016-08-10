@@ -23,6 +23,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
@@ -42,6 +43,8 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 public class BluetoothIOModule extends ReactContextBaseJavaModule {
+
+  static final String ERROR_INVALID_CONTENT = "E_INVALID_CONTENT";
 
   // SPP UUID
   // BluetoothSocket socket = device.createRfcommSocketToServiceRecord(SPP_UUID);
@@ -304,6 +307,56 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
       //promise.reject(ex);
     }
   }
+
+  private void dumpMap(ReadableMap readableMap) {
+    ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
+    while (iterator.hasNextKey()) {
+      String key = iterator.nextKey();
+      Log.d(TAG, String.format("key[%s]=%s", key, readableMap.getString(key)));
+    }
+  }
+
+  @ReactMethod
+  public void connect(ReadableMap bluetoothDevice, boolean secure) {
+
+    if (null == bluetoothDevice) {
+      //promise.reject(ERROR_INVALID_CONTENT, "device cannot be null");
+      return;
+    }
+
+    dumpMap(bluetoothDevice);
+
+
+    //public synchronized void connect(BluetoothDevice device, boolean secure)
+    try {
+
+      String name = "";
+      String address = "";
+      if (false == bluetoothDevice.hasKey("name")) {
+        name = bluetoothDevice.getString("name");
+      }
+      if (false == bluetoothDevice.hasKey("address")) {
+        address = bluetoothDevice.getString("title");
+      }
+      Log.d(TAG, String.format("connect to bluetoothDevice: %s, %s", name, address));
+
+
+      // Get the device MAC address
+      // String address = data.getExtras()
+      //         .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+
+      // Get the BluetoothDevice object
+      BluetoothAdapter bluetoothAdapter = mChatService.bluetoothAdapter();
+      BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
+      mChatService.connect(device, secure);
+
+      //promise.resolve(data.length());
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      //promise.reject(ex);
+    }
+  }
+
 
 }
 

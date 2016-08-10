@@ -87,6 +87,10 @@ public class BluetoothChatService {
         //mHandler = handler;
     }
 
+   public synchronized BluetoothAdapter bluetoothAdapter() {
+      return mAdapter;
+   }
+
     /**
      * Set the current state of the chat connection
      *
