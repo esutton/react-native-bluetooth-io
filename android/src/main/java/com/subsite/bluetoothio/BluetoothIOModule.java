@@ -4,13 +4,13 @@ import android.bluetooth.BluetoothAdapter;
 //import android.bluetooth.BluetoothAdapter.BluetoothStateChangeCallback;
 import android.bluetooth.BluetoothDevice;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
-import android.os.ParcelUuid;
-import android.provider.Settings.Secure;
+//import android.content.pm.PackageInfo;
+//import android.content.pm.PackageManager;
+//import android.os.Build;
+//import android.os.Handler;
+//import android.os.Message;
+//import android.os.ParcelUuid;
+//import android.provider.Settings.Secure;
 import android.util.Log;
 
 //import com.google.android.gms.iid.InstanceID;
@@ -30,15 +30,15 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
+//import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+//import java.util.HashMap;
+//import java.util.Locale;
+//import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
+//import java.util.TimeZone;
 import java.util.UUID;
-
 
 import javax.annotation.Nullable;
 
@@ -299,7 +299,10 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
       Log.d(TAG, String.format("write[%d]={%s}", data.length(), data));
 
       // Debug event emitOnDataRx
-      emitOnDataRx(data);
+      //emitOnDataRx(data);
+
+      byte[] byteArray = data.getBytes(StandardCharsets.UTF_8);
+      mChatService.write(byteArray);
 
       //promise.resolve(data.length());
     } catch (Exception ex) {

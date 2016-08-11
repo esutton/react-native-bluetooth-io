@@ -14,6 +14,8 @@ type BluetoothDeviceInfo = {
 var DeviceEventEmitter = require('react-native').DeviceEventEmitter;
 var listeners = {};
 var onDataRxEvent = "onDataRx";
+var onConnectEvent = "onConnect";
+var onDisconnectEvent = "onDisconnect";
 
 var BluetoothIO  = {
 
