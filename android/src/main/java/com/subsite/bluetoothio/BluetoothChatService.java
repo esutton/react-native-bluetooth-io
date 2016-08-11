@@ -508,11 +508,12 @@ public class BluetoothChatService {
           // Read from the InputStream
           bytes = mmInStream.read(buffer);
           if( bytes < buffer.length) {
-            // Append a null
             buffer[bytes] = 0;
+            String dbgOutput = new String(buffer, 0, bytes, "UTF-8");
+            dbgOutput = dbgOutput.replace("\r", "<CR>");
+            dbgOutput = dbgOutput.replace("\n", "<LF>");
             Log.e(TAG,  String.format("ConnectedThread Rx[%d]={%s}",
-            bytes,
-            new String(buffer, "UTF-8")));
+            bytes, dbgOutput));
           }
 
           // Send the obtained bytes to the UI Activity
