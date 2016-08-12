@@ -21,6 +21,10 @@ import {
 import BluetoothIO from 'react-native-bluetooth-io';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+var base64 = require('base-64');
+var utf8 = require('utf8');
+
+
 // Declare this before React.createClass:
 var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
@@ -52,6 +56,7 @@ var BluetoothIOExample = React.createClass({
       bluetoothStateName: '',
       bluetoothOn: false,
       bluetoothSwitchDisabled: false,
+      connectionStateName: '',
       dataSource: ds.cloneWithRows([]),
       deviceList: [],    };
     },
@@ -102,9 +107,29 @@ var BluetoothIOExample = React.createClass({
 
     onDataRx(e: Event) {
       console.log('Event onDataRx:', e);
+
+      // if (options.encoding === 'utf8') {
+      //   contents = utf8.decode(base64.decode(b64));
+      // } else if (options.encoding === 'ascii') {
+      //   contents = base64.decode(b64);
+      // } else if (options.encoding === 'base64') {
+      //   contents = b64;
+      // } else {
+      //   throw new Error('Invalid encoding type "' + String(options.encoding) + '"');
+      // }
+      let contents = utf8.decode(base64.decode(e.data));
+      console.log('decodeUtf8:', contents);
+
+      contents = base64.decode(e.data);
+      console.log('ascii:', contents);
+
+
     },
     onStateChange(e: Event) {
       console.log('Event onStateChange:', e);
+      this.setState({
+        connectionStateName: e.name,
+      });
     },
     onBluetoothStateChange(e: Event) {
       console.log('Event onBluetoothStateChange:', e);
@@ -247,7 +272,7 @@ var BluetoothIOExample = React.createClass({
         <Icon name='send' size={20}  color='black'>
         </Icon>
         <Text style={styles.welcome}>
-        Send
+        Send ({this.state.connectionStateName})
         </Text>
         </View>
         </TouchableHighlight>

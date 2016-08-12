@@ -434,7 +434,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
   @ReactMethod
   public void writeString(String data, Promise promise) {
     try {
-      Log.d(TAG, String.format("write[%d]={%s}", data.length(), data));
+      Log.d(TAG, String.format("writeString[%d]={%s}", data.length(), data));
 
       // Debug event emitOnDataRx
       //emitOnDataRx(data);
@@ -522,10 +522,14 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     Log.d(TAG, String.format("IConnection: signalDisonnect"));
   }
   public void signalStateChanged(int state) {
-    Log.d(TAG, String.format("IConnection: signalStateChanged: %d", state));
+
+    String stateName = mChatService.ConnectionState[state];
+    Log.d(TAG, String.format("IConnection: signalStateChanged:[%d]=%s",
+    state, stateName));
 
     WritableMap params = Arguments.createMap();
     params.putInt("state", state);
+    params.putString("name", stateName);
     sendEvent(Constants.EVENT_ON_STATE_CHANGE, params);
   }
 

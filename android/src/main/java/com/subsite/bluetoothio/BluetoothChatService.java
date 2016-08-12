@@ -77,6 +77,14 @@ public class BluetoothChatService {
   public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
   public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
+  public static final String[] ConnectionState = new String[]{
+    "none",
+    "listen",
+    "connecting",
+    "connected"
+  };
+
+
   /**
   * Constructor. Prepares a new BluetoothChat session.
   *
@@ -113,7 +121,9 @@ public class BluetoothChatService {
 
     // Give the new state to the Handler so the UI Activity can update
     //mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
-    Log.d(TAG, String.format("BluetoothChatService setState=%d", state));
+    Log.d(TAG, String.format("BluetoothChatService setState[%d]%s",
+    state,
+    ConnectionState[state]));
 
     mConnectionSubscriber.signalStateChanged(state);
   }
@@ -273,7 +283,10 @@ public class BluetoothChatService {
     ConnectedThread r;
     // Synchronize a copy of the ConnectedThread
     synchronized (this) {
-      if (mState != STATE_CONNECTED) return;
+      if (mState != STATE_CONNECTED) {
+        Log.d(TAG, String.format("*** Error write failed: not connected");
+        return;
+      }
       r = mConnectedThread;
     }
     // Perform the write unsynchronized
@@ -381,6 +394,8 @@ public class BluetoothChatService {
               }
               break;
             }
+            // Notify subscriber of AcceptThread events
+            //mConnectionSubscriber.signalStateChanged(mState);
           }
         }
       }
@@ -514,6 +529,9 @@ public class BluetoothChatService {
       byte[] buffer = new byte[1024];
       int bytes;
 
+      // Notify subscriber ConnectedThread connected
+      //mConnectionSubscriber.signalStateChanged(mState);
+
       // Keep listening to the InputStream while connected
       while (mState == STATE_CONNECTED) {
         try {
@@ -558,7 +576,7 @@ public class BluetoothChatService {
         // Share the sent message back to the UI Activity
         // mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
         //         .sendToTarget();
-        Log.e(TAG,  String.format("ConnectedThread Tx %d bytes", buffer.length));
+        Log.e(TAG,  String.format("ConnectedThread Tx[%d] bytes", buffer.length));
 
       } catch (IOException e) {
         Log.e(TAG, "Exception during write", e);
