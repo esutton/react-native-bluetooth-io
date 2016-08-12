@@ -31,10 +31,7 @@ public interface Constants {
 
     // Key names received from the BluetoothChatService Handler
     public static final String DEVICE_NAME = "device_name";
-    public static final String TOAST = "toast";
 
     public static final String EVENT_ON_DATA_RX = "onDataRx";
-    public static final String EVENT_ON_DATA_RX = "onDataRx";
-
-
+    public static final String EVENT_ON_STATE_CHANGE = "onStateChange";
 }

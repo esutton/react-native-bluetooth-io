@@ -18,5 +18,9 @@
     "cocoapod"
   ],
   "author": "Edward Sutton <edward.sutton@subsite.com> (https://github.com/esutton)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "base-64": "^0.1.0",
+    "utf8": "^2.1.1"
+  }
 }

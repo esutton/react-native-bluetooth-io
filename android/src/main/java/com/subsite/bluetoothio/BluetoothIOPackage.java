@@ -1,5 +1,7 @@
 package com.subsite.bluetoothio;
 
+import android.app.Activity;
+
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +17,7 @@ public class BluetoothIOPackage implements ReactPackage {
 
   @Override
   public List<NativeModule> createNativeModules(
-                              ReactApplicationContext reactContext) {
+  ReactApplicationContext reactContext) {
     List<NativeModule> modules = new ArrayList<>();
     modules.add(new BluetoothIOModule(reactContext));
     return modules;
@@ -23,13 +25,13 @@ public class BluetoothIOPackage implements ReactPackage {
 
   @Override
   public List<Class<? extends JavaScriptModule>> createJSModules() {
-  	return Collections.emptyList();
+    return Collections.emptyList();
   }
 
   @Override
   public List<ViewManager> createViewManagers(
-                            ReactApplicationContext reactContext) {
-  	return Collections.emptyList();
+  ReactApplicationContext reactContext) {
+    return Collections.emptyList();
   }
 
 }

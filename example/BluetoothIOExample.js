@@ -12,6 +12,7 @@ import {
   AppRegistry,
   ListView,
   StyleSheet,
+  Switch,
   Text,
   TouchableHighlight,
   View
@@ -48,6 +49,7 @@ var BluetoothIOExample = React.createClass({
 
     return {
       bluetoothState: 0x00000000,
+      bluetoothOn: false,
       dataSource: ds.cloneWithRows([]),
       deviceList: [],    };
   },
@@ -76,6 +78,7 @@ var BluetoothIOExample = React.createClass({
 
       this.setState({
         bluetoothState: bluetoothState,
+        bluetoothOn: 0x0c === bluetoothState,
       });
 
 
@@ -88,13 +91,18 @@ var BluetoothIOExample = React.createClass({
   },
 
   componentDidMount() {
-    BluetoothIO.listenerAdd(this.onDataRx);
+    BluetoothIO.listenerAdd(BluetoothIO.EventOnDataRx, this.onDataRx);
+    BluetoothIO.listenerAdd(BluetoothIO.EventOnStateChange, this.onStateChange);
     this.onScan();
   },
 
   onDataRx(e: Event) {
-    console.log('onDataRx:', e);
+    console.log('Event onDataRx:', e);
   },
+  onStateChange(e: Event) {
+    console.log('Event onStateChange:', e);
+  },
+
 
   onScan() {
     this.scanBluetooth();
@@ -141,6 +149,9 @@ var BluetoothIOExample = React.createClass({
     BluetoothIO.connect(device, secure);
   },
 
+  onBluetoothSwitchChange(value) {
+    console.log('onBluetoothOnChange:', value);
+  },
 
   renderRow(device: Object) {
     var chevronIcon = <Icon name="chevron-right" size={20} ></Icon>;
@@ -172,6 +183,17 @@ var BluetoothIOExample = React.createClass({
 
     return (
       <View style={styles.container}>
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+      <Text>Bluetooth {this.state.bluetoothOn ? 'On' : 'Off'}</Text>
+      <View>
+      <Switch
+      onValueChange={(value) => this.onBluetoothSwitchChange(value)}
+      style={{marginBottom: 10}}
+      value={true} />
+      </View>
+      </View>
+
 
       <TouchableHighlight style={styles.row}
       onPress={this.onScan} >

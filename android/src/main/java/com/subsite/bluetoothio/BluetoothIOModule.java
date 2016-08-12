@@ -1,5 +1,7 @@
 package com.subsite.bluetoothio;
 
+//import android.app.Activity;
+
 import android.bluetooth.BluetoothAdapter;
 //import android.bluetooth.BluetoothAdapter.BluetoothStateChangeCallback;
 import android.bluetooth.BluetoothDevice;
@@ -11,11 +13,13 @@ import android.bluetooth.BluetoothDevice;
 //import android.os.Message;
 //import android.os.ParcelUuid;
 //import android.provider.Settings.Secure;
+import android.content.IntentFilter;
 import android.util.Base64;
 import android.util.Log;
 
 //import com.google.android.gms.iid.InstanceID;
 
+import com.facebook.common.logging.FLog;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -35,9 +39,9 @@ import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 import java.nio.charset.StandardCharsets;
 //import java.util.ArrayList;
 import java.util.HashSet;
-//import java.util.HashMap;
+import java.util.HashMap;
 //import java.util.Locale;
-//import java.util.Map;
+import java.util.Map;
 import java.util.Set;
 //import java.util.TimeZone;
 import java.util.UUID;
@@ -53,6 +57,8 @@ interface IConnection {
 }
 
 public class BluetoothIOModule extends ReactContextBaseJavaModule implements IConnection {
+
+  //final private Activity mActivity;
 
   static final String ERROR_INVALID_CONTENT = "E_INVALID_CONTENT";
 
@@ -82,6 +88,39 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     mChatService = new BluetoothChatService(null, null);
     mChatService.subscribe(this);
 
+    // From: https://github.com/yamill/react-native-orientation/blob/master/android/src/main/java/com/github/yamill/orientation/OrientationModule.java
+    // activity.registerReceiver(receiver, new IntentFilter("onConfigurationChanged"));
+    //
+    // LifecycleEventListener listener = new LifecycleEventListener() {
+    //   @Override
+    //   public void onHostResume() {
+    //     activity.registerReceiver(receiver, new IntentFilter("onConfigurationChanged"));
+    //   }
+    //
+    //   @Override
+    //   public void onHostPause() {
+    //     try
+    //     {
+    //       activity.unregisterReceiver(receiver);
+    //     }
+    //     catch (java.lang.IllegalArgumentException e) {
+    //       FLog.e(ReactConstants.TAG, "receiver already unregistered", e);
+    //     }
+    //   }
+    //
+    //   @Override
+    //   public void onHostDestroy() {
+    //     try
+    //     {
+    //       activity.unregisterReceiver(receiver);
+    //     }
+    //     catch (java.lang.IllegalArgumentException e) {
+    //       FLog.e(ReactConstants.TAG, "receiver already unregistered", e);
+    //     }
+    //   }
+    // };
+    //
+    // reactContext.addLifecycleEventListener(listener);
   }
 
   @Override
@@ -89,6 +128,15 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     // name must match ame used in JS index.js require statement.
     // var BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
     return TAG;
+  }
+
+  @Override
+  public Map<String, Object> getConstants() {
+    final Map<String, Object> constants = new HashMap<>();
+
+    constants.put("EventOnDataRx", Constants.EVENT_ON_DATA_RX);
+    constants.put("EventOnStateChange", Constants.EVENT_ON_STATE_CHANGE);
+    return constants;
   }
 
   // // The Handler that gets information back from the BluetoothChatService
@@ -152,7 +200,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
 
   // Raise event onDataRx
   // Need to Base64 encode ( See react WebSocketModule.java )
-  private void emitOnDataRx(String data) {
+  private void emitOnDataRx(String base64Content) {
 
     // if (payloadType == WebSocket.PayloadType.BINARY) {
     //   message = Base64.encodeToString(bufferedSource.readByteArray(), Base64.NO_WRAP);
@@ -161,7 +209,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     // }
 
     WritableMap params = Arguments.createMap();
-    params.putString("data", data);
+    params.putString("data", base64Content);
     sendEvent(Constants.EVENT_ON_DATA_RX, params);
   }
 
@@ -273,8 +321,10 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     }
   }
 
-
-
+  @ReactMethod
+  setBluetoothEnable(value) {
+    value ? bluetoothAdapter.enable() : bluetoothAdapter.disable()
+  }
 
   public static String[] getPairedBluetooth() {
 
@@ -396,11 +446,10 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     Log.d(TAG, String.format("IConnection: signalDisonnect"));
   }
   public void signalStateChanged(int state) {
-    Log.d(TAG, String.format("IConnection: signalStateChanged: %d"), state);
+    Log.d(TAG, String.format("IConnection: signalStateChanged: %d", state));
 
     WritableMap params = Arguments.createMap();
-    params.putString("data", data);
-    params.putInt("length", 0);
+    params.putInt("state", state);
     sendEvent(Constants.EVENT_ON_STATE_CHANGE, params);
   }
 

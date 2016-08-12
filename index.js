@@ -2,20 +2,25 @@
 * @providesModule react-native-bluetooth-io
 */
 
-// NativeModules.<Name> must match name returned by ReactContextBaseJavaModule::getName in java code
-let BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
-let Buffer = require('buffer').Buffer;
-
 type BluetoothDeviceInfo = {
   name: string;
   address: string;
 };
 
-let DeviceEventEmitter = require('react-native').DeviceEventEmitter;
+
+var NativeAppEventEmitter = require('react-native').NativeAppEventEmitter;  // iOS
+var DeviceEventEmitter = require('react-native').DeviceEventEmitter;        // Android
+var base64 = require('base-64');
+var utf8 = require('utf8');
+
+// NativeModules.<Name> must match name returned by ReactContextBaseJavaModule::getName in java code
+let BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
+let Buffer = require('buffer').Buffer;
+
 let listeners = {};
-let onDataRxEvent = "onDataRx";
-let onConnectEvent = "onConnect";
-let onDisconnectEvent = "onDisconnect";
+// let onDataRxEvent = "onDataRx";
+// let onConnectEvent = "onConnect";
+// let onDisconnectEvent = "onDisconnect";
 
 const BluetoothConnectionState = {
   "None":       0,
@@ -30,8 +35,8 @@ let BluetoothIO  = {
     return "Version 0.0.0";
   },
 
-  listenerAdd(cb) {
-    listeners[cb] = DeviceEventEmitter.addListener(onDataRxEvent,
+  listenerAdd(eventName, cb) {
+    listeners[cb] = DeviceEventEmitter.addListener(eventName,
       (messageRx) => {
         cb(messageRx);
       });
@@ -66,9 +71,17 @@ let BluetoothIO  = {
     });
   },
 
+  // Get Bluetooth Adapter state
   getState(): Promise<number> {
     return BluetoothIOModule.getState();
   },
+
+  // Set
+  // ToDo: Register a BroadcastReceiver to listen for any changes in the state of the BluetoothAdapter:
+  // http://stackoverflow.com/questions/9693755/detecting-state-changes-made-to-the-bluetoothadapter
+  setBluetoothEnable(value) {
+    return BluetoothIOModule.setState(value);
+  }
 
 };
 
