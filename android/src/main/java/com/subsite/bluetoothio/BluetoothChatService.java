@@ -63,6 +63,7 @@ public class BluetoothChatService {
 
   // Member fields
   private final BluetoothAdapter mAdapter;
+  private IConnection mConnectionSubscriber;
   private final Handler mHandler = null;
   private AcceptThread mSecureAcceptThread;
   private AcceptThread mInsecureAcceptThread;
@@ -92,6 +93,15 @@ public class BluetoothChatService {
     return mAdapter;
   }
 
+  public void subscribe(IConnection connection) {
+    mConnectionSubscriber = connection;
+
+    // mConnectionSubscriber.signalConnect();
+    // mConnectionSubscriber.signalDisonnect();
+    // mConnectionSubscriber.bytesReceived();
+  }
+
+
   /**
   * Set the current state of the chat connection
   *
@@ -104,6 +114,8 @@ public class BluetoothChatService {
     // Give the new state to the Handler so the UI Activity can update
     //mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     Log.d(TAG, String.format("BluetoothChatService setState=%d", state));
+
+    mConnectionSubscriber.signalStateChanged(state);
   }
 
   /**
@@ -514,7 +526,11 @@ public class BluetoothChatService {
             dbgOutput = dbgOutput.replace("\n", "<LF>");
             Log.e(TAG,  String.format("ConnectedThread Rx[%d]={%s}",
             bytes, dbgOutput));
+
+            mConnectionSubscriber.bytesReceived(dbgOutput.getBytes());
+
           }
+
 
           // Send the obtained bytes to the UI Activity
           // mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)

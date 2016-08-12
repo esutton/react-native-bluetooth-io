@@ -11,23 +11,25 @@ import android.bluetooth.BluetoothDevice;
 //import android.os.Message;
 //import android.os.ParcelUuid;
 //import android.provider.Settings.Secure;
+import android.util.Base64;
 import android.util.Log;
 
 //import com.google.android.gms.iid.InstanceID;
 
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.common.ReactConstants;
+//import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import java.nio.charset.StandardCharsets;
@@ -42,7 +44,15 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-public class BluetoothIOModule extends ReactContextBaseJavaModule {
+// http://cleancodedevelopment-qualityseal.blogspot.com.br/2012/10/understanding-callbacks-with-java.html
+interface IConnection {
+  void bytesReceived(byte[] byteArray);
+  void signalConnect();
+  void signalDisonnect();
+  void signalStateChanged(int state);
+}
+
+public class BluetoothIOModule extends ReactContextBaseJavaModule implements IConnection {
 
   static final String ERROR_INVALID_CONTENT = "E_INVALID_CONTENT";
 
@@ -70,6 +80,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     // Initialize the BluetoothChatService to perform bluetooth connections
     //mChatService = new BluetoothChatService(getActivity(), mHandler);
     mChatService = new BluetoothChatService(null, null);
+    mChatService.subscribe(this);
 
   }
 
@@ -131,8 +142,9 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
 
   ////////////////////////////////////////////////////////////////////////
 
-  private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
-    reactContext
+  private void sendEvent(String eventName,
+  @Nullable WritableMap params) {
+    getReactApplicationContext()
     .getJSModule(RCTNativeAppEventEmitter.class)
     .emit(eventName, params);
   }
@@ -150,7 +162,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
 
     WritableMap params = Arguments.createMap();
     params.putString("data", data);
-    sendEvent(getReactApplicationContext(), "onDataRx", params);
+    sendEvent(Constants.EVENT_ON_DATA_RX, params);
   }
 
   //@ReactMethod
@@ -359,9 +371,37 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule {
     }
   }
 
+  /////////////////////////////////////////////////////////////////
+  // B l u e T o o t h
+  //
+  // IConnection
+  /////////////////////////////////////////////////////////////////
+
+  // Convert Java byte[] into JavaScript
+  public void bytesReceived(byte[] byteArray) {
+    Log.d(TAG, String.format("IConnection: bytesReceived %d bytes", byteArray.length));
+
+    // byte[] rawbytes={0xa, 0x2, (byte) 0xff};
+    // byte[] encoded = Base64.getEncoder().encode(rawbytes);
+    // String return = new String(encoded);
+
+    String base64Content = Base64.encodeToString(byteArray, Base64.NO_WRAP);
+    emitOnDataRx(base64Content);
+  }
+
+  public void signalConnect() {
+    Log.d(TAG, String.format("IConnection: signalConnect"));
+  }
+  public void signalDisonnect() {
+    Log.d(TAG, String.format("IConnection: signalDisonnect"));
+  }
+  public void signalStateChanged(int state) {
+    Log.d(TAG, String.format("IConnection: signalStateChanged: %d"), state);
+
+    WritableMap params = Arguments.createMap();
+    params.putString("data", data);
+    params.putInt("length", 0);
+    sendEvent(Constants.EVENT_ON_STATE_CHANGE, params);
+  }
 
 }
-
-/////////////////////////////////////////////////////////////////
-// B l u e T o o t h
-/////////////////////////////////////////////////////////////////

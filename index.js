@@ -3,21 +3,28 @@
 */
 
 // NativeModules.<Name> must match name returned by ReactContextBaseJavaModule::getName in java code
-var BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
-
+let BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
+let Buffer = require('buffer').Buffer;
 
 type BluetoothDeviceInfo = {
   name: string;
   address: string;
 };
 
-var DeviceEventEmitter = require('react-native').DeviceEventEmitter;
-var listeners = {};
-var onDataRxEvent = "onDataRx";
-var onConnectEvent = "onConnect";
-var onDisconnectEvent = "onDisconnect";
+let DeviceEventEmitter = require('react-native').DeviceEventEmitter;
+let listeners = {};
+let onDataRxEvent = "onDataRx";
+let onConnectEvent = "onConnect";
+let onDisconnectEvent = "onDisconnect";
 
-var BluetoothIO  = {
+const BluetoothConnectionState = {
+  "None":       0,
+  "Listen":     1,
+  "Connecting": 2,
+  "Connected":  3
+};
+
+let BluetoothIO  = {
 
   versionInfo() {
     return "Version 0.0.0";
