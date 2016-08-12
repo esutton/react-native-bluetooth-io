@@ -116,20 +116,29 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
         if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
           final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
           BluetoothAdapter.ERROR);
+
+          String stateName = "";
           switch (state) {
             case BluetoothAdapter.STATE_OFF:
-            Log.d(TAG, String.format("BluetoothAdapter.STATE_OFF"));
+            stateName = "off";
             break;
             case BluetoothAdapter.STATE_TURNING_OFF:
-            Log.d(TAG, String.format("BluetoothAdapter.STATE_TURNING_OFF"));
+            stateName = "offTransition";
             break;
             case BluetoothAdapter.STATE_ON:
-            Log.d(TAG, String.format("BluetoothAdapter.STATE_ON"));
+            stateName = "on";
             break;
             case BluetoothAdapter.STATE_TURNING_ON:
-            Log.d(TAG, String.format("BluetoothAdapter.STATE_TURNING_ON"));
+            stateName = "onTransition";
             break;
           }
+          Log.d(TAG, String.format("BluetoothAdapter.ACTION_STATE_CHANGED to %s", stateName));
+
+          WritableMap params = Arguments.createMap();
+          params.putInt("state", state);
+          params.putString("name", stateName);
+          sendEvent(Constants.EVENT_ON_BLUETOOTH_STATE_CHANGE, params);
+
         }
       }
     };
@@ -178,6 +187,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
 
     constants.put("EventOnDataRx", Constants.EVENT_ON_DATA_RX);
     constants.put("EventOnStateChange", Constants.EVENT_ON_STATE_CHANGE);
+    constants.put("EventOnBluetoothStateChange", Constants.EVENT_ON_BLUETOOTH_STATE_CHANGE);
     return constants;
   }
 

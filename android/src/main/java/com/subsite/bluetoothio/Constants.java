@@ -34,4 +34,5 @@ public interface Constants {
 
     public static final String EVENT_ON_DATA_RX = "onDataRx";
     public static final String EVENT_ON_STATE_CHANGE = "onStateChange";
+    public static final String EVENT_ON_BLUETOOTH_STATE_CHANGE = "onBluetoothStateChange";
 }
