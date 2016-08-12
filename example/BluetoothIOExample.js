@@ -91,8 +91,8 @@ var BluetoothIOExample = React.createClass({
   },
 
   componentDidMount() {
-    BluetoothIO.listenerAdd(BluetoothIO.EventOnDataRx, this.onDataRx);
-    BluetoothIO.listenerAdd(BluetoothIO.EventOnStateChange, this.onStateChange);
+    BluetoothIO.listenerAdd("onDataRx", this.onDataRx);
+    BluetoothIO.listenerAdd("onStateChange", this.onStateChange);
     this.onScan();
   },
 
