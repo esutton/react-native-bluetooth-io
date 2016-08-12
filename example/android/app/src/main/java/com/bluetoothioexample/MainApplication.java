@@ -3,6 +3,8 @@ package com.bluetoothioexample;
 import android.app.Application;
 import android.util.Log;
 
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;

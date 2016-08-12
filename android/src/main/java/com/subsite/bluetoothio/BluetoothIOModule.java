@@ -1,6 +1,6 @@
 package com.subsite.bluetoothio;
 
-//import android.app.Activity;
+import android.app.Activity;
 
 import android.bluetooth.BluetoothAdapter;
 //import android.bluetooth.BluetoothAdapter.BluetoothStateChangeCallback;
@@ -58,7 +58,7 @@ interface IConnection {
 
 public class BluetoothIOModule extends ReactContextBaseJavaModule implements IConnection {
 
-  //final private Activity mActivity;
+  final private Activity mActivity;
 
   static final String ERROR_INVALID_CONTENT = "E_INVALID_CONTENT";
 
@@ -82,6 +82,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     super(reactContext);
 
     final ReactApplicationContext ctx = reactContext;
+    mActivity = getCurrentActivity();
 
     // Initialize the BluetoothChatService to perform bluetooth connections
     //mChatService = new BluetoothChatService(getActivity(), mHandler);
@@ -322,8 +323,18 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
   }
 
   @ReactMethod
-  setBluetoothEnable(value) {
-    value ? bluetoothAdapter.enable() : bluetoothAdapter.disable()
+  public void setBluetoothEnable(boolean value) {
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    if (bluetoothAdapter == null) {
+      Log.d(TAG, "BluetoothAdapter not found");
+      return;
+    }
+
+    if(value) {
+      bluetoothAdapter.enable();
+      return;
+    }
+    bluetoothAdapter.disable();
   }
 
   public static String[] getPairedBluetooth() {
