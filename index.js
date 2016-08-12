@@ -50,6 +50,16 @@ let BluetoothIO  = {
     listeners[cb] = null;
   },
 
+  // Call from componentDidMount (when getCurrentActivity() is not null)
+  componentDidMount() {
+      BluetoothIOModule.componentDidMount();
+  },
+
+
+  debugFunction1() {
+      BluetoothIOModule.debugFunction1();
+  },
+
   // Returns number of bytes written
   writeString(data: string): Promise<number> {
     return BluetoothIOModule.writeString(data);
@@ -80,7 +90,8 @@ let BluetoothIO  = {
   // ToDo: Register a BroadcastReceiver to listen for any changes in the state of the BluetoothAdapter:
   // http://stackoverflow.com/questions/9693755/detecting-state-changes-made-to-the-bluetoothadapter
   setBluetoothEnable(value) {
-    return BluetoothIOModule.setState(value);
+    console.log('setBluetoothEnable:', value);
+    return BluetoothIOModule.setBluetoothEnable(value);
   }
 
 };

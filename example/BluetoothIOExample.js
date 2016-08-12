@@ -91,6 +91,7 @@ var BluetoothIOExample = React.createClass({
   },
 
   componentDidMount() {
+    BluetoothIO.componentDidMount();
     BluetoothIO.listenerAdd("onDataRx", this.onDataRx);
     BluetoothIO.listenerAdd("onStateChange", this.onStateChange);
     this.onScan();
@@ -151,6 +152,7 @@ var BluetoothIOExample = React.createClass({
 
   onBluetoothSwitchChange(value) {
     console.log('onBluetoothOnChange:', value);
+    BluetoothIO.setBluetoothEnable(value);
   },
 
   renderRow(device: Object) {
@@ -190,7 +192,7 @@ var BluetoothIOExample = React.createClass({
       <Switch
       onValueChange={(value) => this.onBluetoothSwitchChange(value)}
       style={{marginBottom: 10}}
-      value={true} />
+      value={this.state.bluetoothOn} />
       </View>
       </View>
 

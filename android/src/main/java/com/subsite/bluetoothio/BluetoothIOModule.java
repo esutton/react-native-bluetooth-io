@@ -13,16 +13,20 @@ import android.bluetooth.BluetoothDevice;
 //import android.os.Message;
 //import android.os.ParcelUuid;
 //import android.provider.Settings.Secure;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+
 import android.util.Base64;
 import android.util.Log;
 
 //import com.google.android.gms.iid.InstanceID;
 
 import com.facebook.common.logging.FLog;
-
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -58,15 +62,13 @@ interface IConnection {
 
 public class BluetoothIOModule extends ReactContextBaseJavaModule implements IConnection {
 
-  final private Activity mActivity;
-
   static final String ERROR_INVALID_CONTENT = "E_INVALID_CONTENT";
 
   // SPP UUID
   // BluetoothSocket socket = device.createRfcommSocketToServiceRecord(SPP_UUID);
   private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
-  ReactApplicationContext reactContext;
+  ReactApplicationContext mReactContext;
 
   private static final String TAG = "BluetoothIOModule";
 
@@ -81,47 +83,11 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
   public BluetoothIOModule(ReactApplicationContext reactContext) {
     super(reactContext);
 
-    final ReactApplicationContext ctx = reactContext;
-    mActivity = getCurrentActivity();
+    mReactContext = reactContext;
 
     // Initialize the BluetoothChatService to perform bluetooth connections
-    //mChatService = new BluetoothChatService(getActivity(), mHandler);
     mChatService = new BluetoothChatService(null, null);
     mChatService.subscribe(this);
-
-    // From: https://github.com/yamill/react-native-orientation/blob/master/android/src/main/java/com/github/yamill/orientation/OrientationModule.java
-    // activity.registerReceiver(receiver, new IntentFilter("onConfigurationChanged"));
-    //
-    // LifecycleEventListener listener = new LifecycleEventListener() {
-    //   @Override
-    //   public void onHostResume() {
-    //     activity.registerReceiver(receiver, new IntentFilter("onConfigurationChanged"));
-    //   }
-    //
-    //   @Override
-    //   public void onHostPause() {
-    //     try
-    //     {
-    //       activity.unregisterReceiver(receiver);
-    //     }
-    //     catch (java.lang.IllegalArgumentException e) {
-    //       FLog.e(ReactConstants.TAG, "receiver already unregistered", e);
-    //     }
-    //   }
-    //
-    //   @Override
-    //   public void onHostDestroy() {
-    //     try
-    //     {
-    //       activity.unregisterReceiver(receiver);
-    //     }
-    //     catch (java.lang.IllegalArgumentException e) {
-    //       FLog.e(ReactConstants.TAG, "receiver already unregistered", e);
-    //     }
-    //   }
-    // };
-    //
-    // reactContext.addLifecycleEventListener(listener);
   }
 
   @Override
@@ -129,6 +95,81 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     // name must match ame used in JS index.js require statement.
     // var BluetoothIOModule = require('react-native').NativeModules.BluetoothIOModule;
     return TAG;
+  }
+
+  @ReactMethod
+  public void componentDidMount() {
+
+    Activity activity = getCurrentActivity();
+    if( null == activity ){
+      Log.d(TAG, String.format("*** Error cannot registe BroadcastReceiver null == activity"));
+      return;
+    }
+
+    // http://stackoverflow.com/questions/9693755/detecting-state-changes-made-to-the-bluetoothadapter
+    // https://github.com/yamill/react-native-orientation/blob/master/android/src/main/java/com/github/yamill/orientation/OrientationModule.java
+    final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        final String action = intent.getAction();
+
+        if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+          final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+          BluetoothAdapter.ERROR);
+          switch (state) {
+            case BluetoothAdapter.STATE_OFF:
+            Log.d(TAG, String.format("BluetoothAdapter.STATE_OFF"));
+            break;
+            case BluetoothAdapter.STATE_TURNING_OFF:
+            Log.d(TAG, String.format("BluetoothAdapter.STATE_TURNING_OFF"));
+            break;
+            case BluetoothAdapter.STATE_ON:
+            Log.d(TAG, String.format("BluetoothAdapter.STATE_ON"));
+            break;
+            case BluetoothAdapter.STATE_TURNING_ON:
+            Log.d(TAG, String.format("BluetoothAdapter.STATE_TURNING_ON"));
+            break;
+          }
+        }
+      }
+    };
+
+
+    // Register for broadcasts on BluetoothAdapter state change
+    IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+    getCurrentActivity().registerReceiver(mReceiver, filter);
+
+    // From: https://github.com/yamill/react-native-orientation/blob/master/android/src/main/java/com/github/yamill/orientation/OrientationModule.java
+    LifecycleEventListener listener = new LifecycleEventListener() {
+      @Override
+      public void onHostResume() {
+        getCurrentActivity().registerReceiver(mReceiver, new IntentFilter("onConfigurationChanged"));
+      }
+
+      @Override
+      public void onHostPause() {
+        try
+        {
+          getCurrentActivity().unregisterReceiver(mReceiver);
+        }
+        catch (java.lang.IllegalArgumentException e) {
+          FLog.e(ReactConstants.TAG, "receiver already unregistered", e);
+        }
+      }
+
+      @Override
+      public void onHostDestroy() {
+        try
+        {
+          getCurrentActivity().unregisterReceiver(mReceiver);
+        }
+        catch (java.lang.IllegalArgumentException e) {
+          FLog.e(ReactConstants.TAG, "receiver already unregistered", e);
+        }
+      }
+    };
+
+    mReactContext.addLifecycleEventListener(listener);
   }
 
   @Override
@@ -322,6 +363,20 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     }
   }
 
+  @ReactMethod
+  public void debugFunction1() {
+    Activity activity = getCurrentActivity();
+    if( null == activity ) {
+      Log.d(TAG, String.format("*** Warning getCurrentActivity is null"));
+    } else {
+      Log.d(TAG, String.format("    Success getCurrentActivity is not null"));
+    }
+
+  }
+
+  // ToDo: Add BroadcastReceiver
+  // http://stackoverflow.com/questions/9693755/detecting-state-changes-made-to-the-bluetoothadapter
+  // https://github.com/yamill/react-native-orientation/blob/master/android/src/main/java/com/github/yamill/orientation/OrientationModule.java
   @ReactMethod
   public void setBluetoothEnable(boolean value) {
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
