@@ -21,6 +21,8 @@ import {
 import BluetoothIO from 'react-native-bluetooth-io';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import {createTrackerConfiguration} from './TrackerConfiguration';
+
 var base64 = require('base-64');
 var utf8 = require('utf8');
 
@@ -177,8 +179,24 @@ var BluetoothIOExample = React.createClass({
         let pos = this.state.bufferRx.indexOf('\r\n');
         if( 0 <= pos ) {
           console.log('*** Found command <CR><LF> at pos', pos);
-          let foundcommand = this.state.bufferRx.slice(0, pos + 2);
+          pos = pos + 2;
+          let foundcommand = this.state.bufferRx.slice(0, pos);
           console.log('command:', foundcommand);
+
+          if(foundcommand.startsWith("$TSI")) {
+            let trackerConfiguration = createTrackerConfiguration(foundcommand);
+            console.log('trackerConfiguration:', trackerConfiguration);
+          }
+
+          // Remove command from bufferRx
+          let bufferRx = '';
+          if(pos < bufferRx.length ) {
+            bufferRx = this.state.bufferRx.slice(this.state.bufferRx, pos);
+          }
+          this.setState({
+            bufferRx: bufferRx
+          });
+
         }
 
       });
@@ -301,6 +319,10 @@ var BluetoothIOExample = React.createClass({
 
       return (
         <View style={styles.container}>
+
+        <Text style={styles.welcome}>
+        ........
+        </Text>
 
         <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
         <Text>Bluetooth {this.state.bluetoothOn ? 'On' : 'Off'} ({this.state.bluetoothStateName})</Text>
