@@ -24,6 +24,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 var base64 = require('base-64');
 var utf8 = require('utf8');
 
+let Buffer = require('buffer').Buffer;
+
+let options = {
+  encoding: 'utf8'
+};
+
 
 // Declare this before React.createClass:
 var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -52,6 +58,7 @@ var BluetoothIOExample = React.createClass({
     // however, the prop.state change is not being reflected back to here
 
     return {
+      bufferRx: '',
       bluetoothState: 0x00000000,
       bluetoothStateName: '',
       bluetoothOn: false,
@@ -105,26 +112,82 @@ var BluetoothIOExample = React.createClass({
       this.onScan();
     },
 
+    // Hex dump to console
+    bufferLog(buffer, offsetStart, length) {
+        console.log('bufferLog[', length, ']:offsetStart:', offsetStart);
+        console.log('typeof:', typeof buffer);
+
+        let isString = typeof buffer === 'string';
+
+        let i = 0;
+        let row = 0;
+
+        while( length > i) {
+          let rowData = "";
+          for(let col = 0; col < 16; ++col ) {
+            if( length <= i ) {
+              break;
+            }
+
+            let spacer = " ";
+            if( 7 === col ) {
+              spacer = "  ";
+            }
+
+            if(isString) {
+              rowData = rowData + ("00" + buffer.charCodeAt(i).toString(16)).substr(-2) + spacer;
+            } else {
+              rowData = rowData + ("00" + buffer[i].toString(16)).substr(-2) + spacer;
+            }
+
+            ++i;
+          }
+          console.log(("0000" + row.toString(16)).substr(-4) + ": " + rowData);
+          row = row + 16;
+        }
+    },
+
     onDataRx(e: Event) {
       console.log('Event onDataRx:', e);
 
-      // if (options.encoding === 'utf8') {
-      //   contents = utf8.decode(base64.decode(b64));
-      // } else if (options.encoding === 'ascii') {
-      //   contents = base64.decode(b64);
-      // } else if (options.encoding === 'base64') {
-      //   contents = b64;
-      // } else {
-      //   throw new Error('Invalid encoding type "' + String(options.encoding) + '"');
-      // }
-      let contents = utf8.decode(base64.decode(e.data));
-      console.log('decodeUtf8:', contents);
+      console.log('*** Buffer[',  e.data.length, ']: base64 ***');
+      let bufferNew = Buffer.alloc(e.data.length, e.data, 'base64');
+      this.bufferLog(bufferNew, 0, bufferNew.length);
 
-      contents = base64.decode(e.data);
-      console.log('ascii:', contents);
+      let asciiContents = '';
+      if (options.encoding === 'utf8') {
+        asciiContents = base64.decode(e.data);
+        console.log('ascii[', asciiContents.length, ']:', asciiContents);
+        this.bufferLog(asciiContents, 0, asciiContents.length);
+      }
 
+      // const totalLength = this.state.bufferRx.length + bufferNew.length;
+      // console.log('Buffer.concat([this.state.bufferRx, bufferNew], ', totalLength, ');');
+      // const bufferRx = Buffer.concat([this.state.bufferRx, bufferNew], totalLength);
+
+      let bufferRx = this.state.bufferRx + asciiContents;
+
+      // Note: setState is an async function
+      this.setState({
+        bufferRx: bufferRx,
+      },
+      function() {
+        // If here, then new state is in effect
+        console.log('*** Buffer[', this.state.bufferRx.length, ']: this.state.bufferRx ***');
+        this.bufferLog(this.state.bufferRx, 0, this.state.bufferRx.length);
+
+        let pos = this.state.bufferRx.indexOf('\r\n');
+        if( 0 <= pos ) {
+          console.log('*** Found command <CR><LF> at pos', pos);
+          let command = this.state.bufferRx.slice(0, pos + 2);
+          contents = base64.decode(e.data);
+          console.log('command:', contents);
+        }
+
+      });
 
     },
+
     onStateChange(e: Event) {
       console.log('Event onStateChange:', e);
       this.setState({
@@ -143,6 +206,7 @@ var BluetoothIOExample = React.createClass({
           bluetoothOn: true,
           bluetoothSwitchDisabled: bluetoothSwitchDisabled,
         });
+        this.scanBluetooth();
       }
       if('off' === e.name) {
         this.setState({
@@ -236,7 +300,7 @@ var BluetoothIOExample = React.createClass({
       console.log("BluetoothIOExample:render");
 
       let bluetoothStateString = '0x' + this.state.bluetoothState.toString(16);
-      console.log('this.state= ', this.state);
+      //console.log('this.state= ', this.state);
 
       return (
         <View style={styles.container}>

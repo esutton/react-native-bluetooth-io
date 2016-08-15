@@ -284,7 +284,7 @@ public class BluetoothChatService {
     // Synchronize a copy of the ConnectedThread
     synchronized (this) {
       if (mState != STATE_CONNECTED) {
-        Log.d(TAG, String.format("*** Error write failed: not connected");
+        Log.d(TAG, String.format("*** Error write failed: not connected"));
         return;
       }
       r = mConnectedThread;
@@ -545,23 +545,27 @@ public class BluetoothChatService {
             Log.e(TAG,  String.format("ConnectedThread Rx[%d]={%s}",
             bytes, dbgOutput));
 
-            mConnectionSubscriber.bytesReceived(dbgOutput.getBytes());
+            //mConnectionSubscriber.bytesReceived(dbgOutput.getBytes());
+            mConnectionSubscriber.bytesReceived(Arrays.copyOfRange(buffer, 0, bytes));
 
           }
-
-
           // Send the obtained bytes to the UI Activity
           // mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
           //         .sendToTarget();
 
         } catch (IOException e) {
-          Log.e(TAG, "disconnected", e);
+          Log.e(TAG, "ConnectedThread exception: ", e);
           connectionLost();
           // Start the service over to restart listening mode
           BluetoothChatService.this.start();
           break;
         }
       }
+
+      // Where is disconnect state set?
+      // For example when TK is powered off?
+      Log.e(TAG, "ConnectedThread disconnected");
+
     }
 
     /**
