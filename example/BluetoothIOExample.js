@@ -147,12 +147,14 @@ var BluetoothIOExample = React.createClass({
         }
     },
 
+    // $TSI,15,0,322644,3,0,1,TK_0003,00:07:80:46:87:cd\r,20160815T123109,20130524T131700,20131023T173556,2\r\n
     onDataRx(e: Event) {
       console.log('Event onDataRx:', e);
 
-      console.log('*** Buffer[',  e.data.length, ']: base64 ***');
-      let bufferNew = Buffer.alloc(e.data.length, e.data, 'base64');
-      this.bufferLog(bufferNew, 0, bufferNew.length);
+      // Let's see if can use JS String for RX buffer
+      // console.log('*** Buffer[',  e.data.length, ']: base64 ***');
+      // let bufferNew = Buffer.alloc(e.data.length, e.data, 'base64');
+      // this.bufferLog(bufferNew, 0, bufferNew.length);
 
       let asciiContents = '';
       if (options.encoding === 'utf8') {
@@ -160,10 +162,6 @@ var BluetoothIOExample = React.createClass({
         console.log('ascii[', asciiContents.length, ']:', asciiContents);
         this.bufferLog(asciiContents, 0, asciiContents.length);
       }
-
-      // const totalLength = this.state.bufferRx.length + bufferNew.length;
-      // console.log('Buffer.concat([this.state.bufferRx, bufferNew], ', totalLength, ');');
-      // const bufferRx = Buffer.concat([this.state.bufferRx, bufferNew], totalLength);
 
       let bufferRx = this.state.bufferRx + asciiContents;
 
@@ -179,9 +177,8 @@ var BluetoothIOExample = React.createClass({
         let pos = this.state.bufferRx.indexOf('\r\n');
         if( 0 <= pos ) {
           console.log('*** Found command <CR><LF> at pos', pos);
-          let command = this.state.bufferRx.slice(0, pos + 2);
-          contents = base64.decode(e.data);
-          console.log('command:', contents);
+          let foundcommand = this.state.bufferRx.slice(0, pos + 2);
+          console.log('command:', foundcommand);
         }
 
       });
