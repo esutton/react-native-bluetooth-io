@@ -191,6 +191,8 @@ public class BluetoothChatService {
     }
 
     // Start the thread to connect with the given device
+    secure = false;
+
     mConnectThread = new ConnectThread(device, secure);
     mConnectThread.start();
     setState(STATE_CONNECTING);
@@ -428,6 +430,7 @@ public class BluetoothChatService {
     public ConnectThread(BluetoothDevice device, boolean secure) {
       mmDevice = device;
       BluetoothSocket tmp = null;
+
       mSocketType = secure ? "Secure" : "Insecure";
 
       // Get a BluetoothSocket for a connection with the
@@ -442,7 +445,17 @@ public class BluetoothChatService {
         //                }
 
         // RFCOMM SPP
-        // This works with TK_0003
+        // SPP_UUID works with TK_0003 but does not work on BlueStar GPS
+        // BlueStar GPS reports
+        // 08-15 15:44:17.293 12890 12928 W bt_sdp  : SDP - Rcvd conn cnf with error: 0x4  CID 0x40
+        // 08-15 15:44:17.296 12890 12931 E bt_btif_sock_rfcomm: find_rfc_slot_by_id unable to find RFCOMM slot id: 3
+        // 08-15 15:44:17.297 11854 12982 E BluetoothChatService: Connect IOException read failed, socket might closed or timeout, read ret: -1
+        // 08-15 15:44:17.297 11854 12982 E BluetoothChatService: java.io.IOException: read failed, socket might closed or timeout, read ret: -1
+        //tmp = device.createInsecureRfcommSocketToServiceRecord(SPP_UUID);
+
+        //tmp = device.createRfcommSocketToServiceRecord(MY_UUID_INSECURE);
+
+        // This works on BT chat service
         tmp = device.createInsecureRfcommSocketToServiceRecord(SPP_UUID);
 
 
@@ -525,7 +538,7 @@ public class BluetoothChatService {
     }
 
     public void run() {
-      Log.i(TAG, "BEGIN mConnectedThread");
+      Log.i(TAG, "BEGIN ConnectedThread");
       byte[] buffer = new byte[1024];
       int bytes;
 

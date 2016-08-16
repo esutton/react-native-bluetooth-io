@@ -474,7 +474,6 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
 
     dumpMap(bluetoothDevice);
 
-
     //public synchronized void connect(BluetoothDevice device, boolean secure)
     try {
 

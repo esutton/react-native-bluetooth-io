@@ -3,7 +3,7 @@
 * @copyright The Charles Machine Works, Inc., 2016
 * @copyright All rights reserved http://www.ditchwitch.com/
 *
-* @description Parse Tracker configuration repsonse to GETINFO
+* @description Parse Tracker configuration response to GETINFO
 *
 * @Author Edward Sutton <edward.sutton@subsite.com>
 *
