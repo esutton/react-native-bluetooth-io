@@ -140,7 +140,7 @@ var BluetoothIOExample = React.createClass({
 
     // Hex dump to console
     bufferLog(buffer, offsetStart, length) {
-      console.log('bufferLog[' + length + ']:offsetStart: ' + offsetStart);
+      console.log('bufferLog [' + length + '], offsetStart: ' + offsetStart);
       //console.log('typeof:', typeof buffer);
 
       let isString = typeof buffer === 'string';
@@ -208,16 +208,14 @@ var BluetoothIOExample = React.createClass({
       },
       function() {
         // If here, then new state is in effect
-        console.log('*** Buffer[', this.state.bufferRx.length, ']: this.state.bufferRx ***');
         this.bufferLog(this.state.bufferRx, 0, this.state.bufferRx.length);
 
         let pos = this.state.bufferRx.indexOf('\r\n');
         if( 0 <= pos ) {
           pos = pos + 2;
-
           let foundcommand = this.state.bufferRx.slice(0, pos);
 
-          console.log('*** Found command <CR><LF> at [' + pos-2 + ']={' + foundcommand + '}');
+          console.log('*** Found command <CR><LF> { ' + JSON.stringify(foundcommand) + ' }');
 
           let lengthBufferBefore = this.state.bufferRx.length;
           let lengthBufferAfter = -1;
@@ -227,7 +225,7 @@ var BluetoothIOExample = React.createClass({
             let trackerConfiguration = createTrackerConfiguration(foundcommand);
             console.log('trackerConfiguration:', trackerConfiguration);
           } else if(foundcommand.startsWith("$")) {
-            console.log('*** NMEA : { ' + JSON.stringify(foundcommand) + ' }');
+            console.log('NMEA : { ' + JSON.stringify(foundcommand) + ' }');
             console.log(nmea.parse(foundcommand));
           }
 
