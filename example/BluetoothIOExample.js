@@ -119,59 +119,68 @@ var BluetoothIOExample = React.createClass({
 
     testNmea() {
       var s = [
-      "$GPGSA,A,1,,,,,,,,,,,,,,,*1E",
-      "$GPGSV,3,1,12,29,75,266,39,05,48,047,,26,43,108,,15,35,157,*78",
-      "$GPGSV,3,2,12,21,30,292,,18,21,234,,02,18,093,,25,13,215,*7F",
-      "$GPGSV,3,3,12,30,11,308,,16,,333,,12,,191,,07,-4,033,*62",
-      "$GPRMC,085542.023,V,,,,,,,041211,,,N*45",
-      "$GPGGA,085543.023,,,,,0,00,,,M,0.0,M,,0000*58",
-      "$IIBWC,160947,6008.160,N,02454.290,E,162.4,T,154.3,M,001.050,N,DEST*1C",
-      "$IIAPB,A,A,0.001,L,N,V,V,154.3,M,DEST,154.3,M,154.2,M*19",
-      "$IIHDM,201.5,M*24",
-      "$PRDID,-4.44,2.12,154.25*56"
+        "$GPGSA,A,1,,,,,,,,,,,,,,,*1E",
+        "$GPGSV,3,1,12,29,75,266,39,05,48,047,,26,43,108,,15,35,157,*78",
+        "$GPGSV,3,2,12,21,30,292,,18,21,234,,02,18,093,,25,13,215,*7F",
+        "$GPGSV,3,3,12,30,11,308,,16,,333,,12,,191,,07,-4,033,*62",
+        "$GPRMC,085542.023,V,,,,,,,041211,,,N*45",
+        "$GPGGA,085543.023,,,,,0,00,,,M,0.0,M,,0000*58",
+        "$IIBWC,160947,6008.160,N,02454.290,E,162.4,T,154.3,M,001.050,N,DEST*1C",
+        "$IIAPB,A,A,0.001,L,N,V,V,154.3,M,DEST,154.3,M,154.2,M*19",
+        "$IIHDM,201.5,M*24",
+        "$PRDID,-4.44,2.12,154.25*56"
       ];
 
       console.log('*** Test GPS NMEA ***');
       for (var i=0; i < s.length; i++) {
-          console.log('*** NMEA s[' + i + '] : {' + s[i] + '}');
-          console.log(nmea.parse(s[i]));
+        console.log('*** NMEA s[' + i + '] : {' + s[i] + '}');
+        console.log(nmea.parse(s[i]));
       };
     },
 
     // Hex dump to console
     bufferLog(buffer, offsetStart, length) {
-        console.log('bufferLog[', length, ']:offsetStart:', offsetStart);
-        //console.log('typeof:', typeof buffer);
+      console.log('bufferLog[' + length + ']:offsetStart: ' + offsetStart);
+      //console.log('typeof:', typeof buffer);
 
-        let isString = typeof buffer === 'string';
+      let isString = typeof buffer === 'string';
 
-        let i = 0;
-        let row = 0;
+      let i = 0;
+      let row = 0;
 
-        console.log('----: -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --');
-        while( length > i) {
-          let rowData = "";
-          for(let col = 0; col < 16; ++col ) {
-            if( length <= i ) {
-              break;
-            }
+      console.log('----: -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --');
+      while( length > i) {
+        let rowData = "";
+        let rowStartPos = i;
+        for(let col = 0; col < 16; ++col ) {
 
-            let spacer = " ";
-            if( 7 === col ) {
-              spacer = "  ";
-            }
-
-            if(isString) {
-              rowData = rowData + ("00" + buffer.charCodeAt(i).toString(16)).substr(-2) + spacer;
-            } else {
-              rowData = rowData + ("00" + buffer[i].toString(16)).substr(-2) + spacer;
-            }
-
-            ++i;
+          let spacer = " ";
+          if( 7 === col ) {
+            spacer = "  ";
           }
-          console.log(("0000" + row.toString(16)).substr(-4) + ": " + rowData);
-          row = row + 16;
+
+          let dataDisplay = "  ";
+          if( length > i ) {
+            if(isString) {
+              //rowData = rowData + ("00" + buffer.charCodeAt(i).toString(16)).substr(-2) + spacer;
+              dataDisplay = ("00" + buffer.charCodeAt(i).toString(16)).substr(-2);
+            } else {
+              //rowData = rowData + ("00" + buffer[i].toString(16)).substr(-2) + spacer;
+              dataDisplay = ("00" + buffer[i].toString(16)).substr(-2);
+            }
+          }
+          rowData = rowData + dataDisplay + spacer;
+
+          ++i;
         }
+
+        if(isString) {
+          rowData = rowData + " : " + JSON.stringify(buffer.slice(rowStartPos, i));
+        }
+
+        console.log(("0000" + row.toString(16)).substr(-4) + ": " + rowData);
+        row = row + 16;
+      }
     },
 
     // $TSI,15,0,322644,3,0,1,TK_0003,00:07:80:46:87:cd\r,20160815T123109,20130524T131700,20131023T173556,2\r\n
@@ -186,7 +195,7 @@ var BluetoothIOExample = React.createClass({
       let asciiContents = '';
       if (options.encoding === 'utf8') {
         asciiContents = base64.decode(e.data);
-        console.log('ascii[', asciiContents.length, ']:', asciiContents);
+        console.log('ascii[' + asciiContents.length + ']={' + asciiContents + '}');
         this.bufferLog(asciiContents, 0, asciiContents.length);
       }
 
@@ -208,7 +217,7 @@ var BluetoothIOExample = React.createClass({
 
           let foundcommand = this.state.bufferRx.slice(0, pos);
 
-          console.log('*** Found command <CR><LF> at [', pos-2, ']={' + foundcommand + '}');
+          console.log('*** Found command <CR><LF> at [' + pos-2 + ']={' + foundcommand + '}');
 
           let lengthBufferBefore = this.state.bufferRx.length;
           let lengthBufferAfter = -1;
@@ -218,7 +227,7 @@ var BluetoothIOExample = React.createClass({
             let trackerConfiguration = createTrackerConfiguration(foundcommand);
             console.log('trackerConfiguration:', trackerConfiguration);
           } else if(foundcommand.startsWith("$")) {
-            console.log('*** NMEA : {' + foundcommand + '}');
+            console.log('*** NMEA : { ' + JSON.stringify(foundcommand) + ' }');
             console.log(nmea.parse(foundcommand));
           }
 
@@ -233,15 +242,15 @@ var BluetoothIOExample = React.createClass({
             bufferRx: bufferRx
           },
           function() {
-            lengthBufferAfter = this.state.bufferRx.length;
-            console.log('*** Buffer after remove:{' + foundcommand + '}');
-            console.log('    lengthBufferBefore.:', lengthBufferBefore);
-            console.log('    lengthCommand......:', lengthCommand);
-            console.log('    lengthBufferAfter..:', lengthBufferAfter);
-            console.log('    Expected..........:',
-            (lengthBufferBefore - lengthCommand),
-            lengthCommand === lengthBufferAfter);
-            this.bufferLog(this.state.bufferRx, 0, this.state.bufferRx.length);
+            // lengthBufferAfter = this.state.bufferRx.length;
+            // console.log('*** Buffer after remove:{' + foundcommand + '}');
+            // console.log('    lengthBufferBefore.:', lengthBufferBefore);
+            // console.log('    lengthCommand......:', lengthCommand);
+            // console.log('    lengthBufferAfter..:', lengthBufferAfter);
+            // console.log('    Expected..........:',
+            // (lengthBufferBefore - lengthCommand),
+            // lengthCommand === lengthBufferAfter);
+            // this.bufferLog(this.state.bufferRx, 0, this.state.bufferRx.length);
           });
 
         }
