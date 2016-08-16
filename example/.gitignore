@@ -34,6 +34,10 @@ local.properties
 node_modules/
 npm-debug.log
 
+# "node-nmea": "git+https://github.com/jamesp/node-nmea.git"
+!node_modules/nmea
+!node_modules/nmea/*
+
 # BUCK
 buck-out/
 \.buckd/
