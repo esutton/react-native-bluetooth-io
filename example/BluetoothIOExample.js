@@ -141,13 +141,14 @@ var BluetoothIOExample = React.createClass({
     // Hex dump to console
     bufferLog(buffer, offsetStart, length) {
         console.log('bufferLog[', length, ']:offsetStart:', offsetStart);
-        console.log('typeof:', typeof buffer);
+        //console.log('typeof:', typeof buffer);
 
         let isString = typeof buffer === 'string';
 
         let i = 0;
         let row = 0;
 
+        console.log('----: -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --');
         while( length > i) {
           let rowData = "";
           for(let col = 0; col < 16; ++col ) {
@@ -189,6 +190,7 @@ var BluetoothIOExample = React.createClass({
         this.bufferLog(asciiContents, 0, asciiContents.length);
       }
 
+      // Append new data to bufferRx
       let bufferRx = this.state.bufferRx + asciiContents;
 
       // Note: setState is an async function
@@ -202,23 +204,44 @@ var BluetoothIOExample = React.createClass({
 
         let pos = this.state.bufferRx.indexOf('\r\n');
         if( 0 <= pos ) {
-          console.log('*** Found command <CR><LF> at pos', pos);
           pos = pos + 2;
+
           let foundcommand = this.state.bufferRx.slice(0, pos);
-          console.log('command:', foundcommand);
+
+          console.log('*** Found command <CR><LF> at [', pos-2, ']={' + foundcommand + '}');
+
+          let lengthBufferBefore = this.state.bufferRx.length;
+          let lengthBufferAfter = -1;
+          let lengthCommand = foundcommand.length;
 
           if(foundcommand.startsWith("$TSI")) {
             let trackerConfiguration = createTrackerConfiguration(foundcommand);
             console.log('trackerConfiguration:', trackerConfiguration);
+          } else if(foundcommand.startsWith("$")) {
+            console.log('*** NMEA : {' + foundcommand + '}');
+            console.log(nmea.parse(foundcommand));
           }
 
+
           // Remove command from bufferRx
+          // by keeping the data *after* the <CR><LF>
           let bufferRx = '';
-          if(pos < bufferRx.length ) {
+          if(pos < this.state.bufferRx.length ) {
             bufferRx = this.state.bufferRx.slice(this.state.bufferRx, pos);
           }
           this.setState({
             bufferRx: bufferRx
+          },
+          function() {
+            lengthBufferAfter = this.state.bufferRx.length;
+            console.log('*** Buffer after remove:{' + foundcommand + '}');
+            console.log('    lengthBufferBefore.:', lengthBufferBefore);
+            console.log('    lengthCommand......:', lengthCommand);
+            console.log('    lengthBufferAfter..:', lengthBufferAfter);
+            console.log('    Expected..........:',
+            (lengthBufferBefore - lengthCommand),
+            lengthCommand === lengthBufferAfter);
+            this.bufferLog(this.state.bufferRx, 0, this.state.bufferRx.length);
           });
 
         }
@@ -302,10 +325,17 @@ var BluetoothIOExample = React.createClass({
     },
 
     onRowPress(device: Object) {
-      Alert.alert('onRowPress ' + device.name + ', ' + device.address);
-
       let secure = false;
-      BluetoothIO.connect(device, secure);
+      let msg = 'Connect to: ' + device.name + ', ' + device.address;
+      Alert.alert(
+        msg,
+        msg,
+        [
+          {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+          {text: 'OK', onPress: () => BluetoothIO.connect(device, secure)},
+        ]
+      )
+
     },
 
     onBluetoothSwitchChange(value) {
