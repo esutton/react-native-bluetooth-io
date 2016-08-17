@@ -135,9 +135,12 @@ var BluetoothIOExample = React.createClass({
     BluetoothIO.listenerAdd("onDataRx", this.onDataRx);
     BluetoothIO.listenerAdd("onStateChange", this.onStateChange);
     BluetoothIO.listenerAdd("onBluetoothStateChange", this.onBluetoothStateChange);
-    this.onScan();
 
-    //this.testNmea();
+    BluetoothIO.listenerAdd("onBluetoothDiscoveryStart", this.onBluetoothDiscoveryStart);
+    BluetoothIO.listenerAdd("onBluetoothDiscoveryStop", this.onBluetoothDiscoveryStop);
+    BluetoothIO.listenerAdd("onBluetoothDiscoveryFound", this.onBluetoothDiscoveryFound);
+
+    this.onScan();
   },
 
   testNmea() {
@@ -314,6 +317,16 @@ var BluetoothIOExample = React.createClass({
       });
     }
 
+  },
+
+  onBluetoothDiscoveryStart(e: Event) {
+    console.log('onBluetoothDiscoveryStart:', e);
+  },
+  onBluetoothDiscoveryStop(e: Event) {
+    console.log('onBluetoothDiscoveryStop:', e);
+  },
+  onBluetoothDiscoveryFound(e: Event) {
+    console.log('onBluetoothDiscoveryFound:', e);
   },
 
   // $TSI,15,0,322644,3,0,1,TK_0003,00:07:80:46:87:cd\r,20160815T123109,20130524T131700,20131023T173556,2\r\n

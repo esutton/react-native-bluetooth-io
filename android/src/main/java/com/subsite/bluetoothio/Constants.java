@@ -35,4 +35,8 @@ public interface Constants {
     public static final String EVENT_ON_DATA_RX = "onDataRx";
     public static final String EVENT_ON_STATE_CHANGE = "onStateChange";
     public static final String EVENT_ON_BLUETOOTH_STATE_CHANGE = "onBluetoothStateChange";
+
+    public static final String EVENT_ON_BLUETOOTH_DISCOVERY_START = "onBluetoothDiscoveryStart";
+    public static final String EVENT_ON_BLUETOOTH_DISCOVERY_STOP = "onBluetoothDiscoveryStop";
+    public static final String EVENT_ON_BLUETOOTH_DISCOVERY_FOUND = "onBluetoothDiscoveryFound";
 }
