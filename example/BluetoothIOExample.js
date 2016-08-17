@@ -8,12 +8,11 @@ import React, { Component } from 'react';
 
 
 import {
-  ActivityIndicatorIOS,
+  ActivityIndicator,
   Alert,
   AppRegistry,
   ListView,
   Platform,
-  ProgressBarAndroid,
   StyleSheet,
   Switch,
   Text,
@@ -72,62 +71,27 @@ var BluetoothIOExample = React.createClass({
       bluetoothOn: false,
       bluetoothSwitchDisabled: false,
       connectionStateName: '',
+      isDiscovering: false,
       dataSource: ds.cloneWithRows([]),
       deviceList: [],
       nmeaString: '',
       nmeaCount: 0,
+      nmeaId: '---',
+      nmeaType: '---',
       position:    {
-          coords: {
-            latitude: 0,
-            longitude: 0,
-            altitude: 0,
-            accuracy: 0,
-            altitudeAccuracy: null,
-            heading: null,
-            speed: null,
-          },
-          timestamp: 0,
+        coords: {
+          latitude: 0,
+          longitude: 0,
+          altitude: 0,
+          accuracy: 0,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
         },
+        timestamp: 0,
+      },
 
     };
-  },
-
-
-
-
-  scanBluetooth() {
-    console.log("BluetoothIOExample:scanBluetooth");
-
-    BluetoothIO.getDeviceList("TK")
-    .then((deviceList) => {
-      console.log('BluetoothIO.getDeviceList: ', deviceList);
-      this.setState({
-        deviceList: deviceList,
-        dataSource: ds.cloneWithRows(deviceList),
-      });
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-
-    // Check if Bluetooth is ON
-    BluetoothIO.getState()
-    .then((bluetoothState) => {
-      console.log('this.statex= ', this.state);
-      console.log('b4 BluetoothIO.getState: 0x' + bluetoothState.toString(16));
-
-      this.setState({
-        bluetoothState: bluetoothState,
-        bluetoothOn: 0x0c === bluetoothState,
-      });
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-
-    BluetoothIO.discoveryStart();
-
-
   },
 
   componentDidMount() {
@@ -300,20 +264,37 @@ var BluetoothIOExample = React.createClass({
     let nmeaCount = this.state.nmeaCount + 1;
     console.log('nmeaCount: ' + nmeaCount + ' : ' + response);
 
+    let nmeaString = JSON.stringify(response);
+    let nmeaId = response.sentence;
+    let nmeaType = response.type;
+
     if('GGA' === response.sentence ) {
       this.setState({
         position: this.nmeaGgaToPosition(response),
-        nmeaString: response,
+        nmeaString: nmeaString,
         nmeaCount: nmeaCount,
+        nmeaId: nmeaId,
+        nmeaType: nmeaType,
       });
     } else if('GST' === response.sentence ) {
+      // Update the position accuracy with GST semiMajorAxis1SigmaErrorMeters
       const position = this.state.position;
       position.timestamp = response.timestamp;
       position.coords.accuracy = response.semiMajorAxis1SigmaErrorMeters;
       this.setState({
-        position: this.nmeaGgaToPosition(response),
-        nmeaString: response,
+        position: position,
+        nmeaString: nmeaString,
         nmeaCount: nmeaCount,
+        nmeaId: nmeaId,
+        nmeaType: nmeaType,
+      });
+    } else {
+
+      this.setState({
+        nmeaString: nmeaString,
+        nmeaCount: nmeaCount,
+        nmeaId: nmeaId,
+        nmeaType: nmeaType,
       });
     }
 
@@ -321,12 +302,63 @@ var BluetoothIOExample = React.createClass({
 
   onBluetoothDiscoveryStart(e: Event) {
     console.log('onBluetoothDiscoveryStart:', e);
+    this.setState({
+      isDiscovering: true,
+    });
   },
   onBluetoothDiscoveryStop(e: Event) {
     console.log('onBluetoothDiscoveryStop:', e);
+    this.setState({
+      isDiscovering: false,
+    });
   },
   onBluetoothDiscoveryFound(e: Event) {
     console.log('onBluetoothDiscoveryFound:', e);
+
+    if(0x0a != e.bondState ) {
+      console.log('Already paired:', e);
+      return;
+    }
+
+    const deviceList = this.state.deviceList;
+    deviceList.push(e);
+    this.setState({
+      deviceList: deviceList,
+      dataSource: ds.cloneWithRows(deviceList),
+    });
+  },
+
+  scanBluetooth() {
+    console.log("BluetoothIOExample:scanBluetooth");
+
+    BluetoothIO.getDeviceList("TK")
+    .then((deviceList) => {
+      console.log('BluetoothIO.getDeviceList: ', deviceList);
+      this.setState({
+        deviceList: deviceList,
+        dataSource: ds.cloneWithRows(deviceList),
+      });
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+
+    // Check if Bluetooth is ON
+    BluetoothIO.getState()
+    .then((bluetoothState) => {
+      console.log('this.statex= ', this.state);
+      console.log('b4 BluetoothIO.getState: 0x' + bluetoothState.toString(16));
+
+      this.setState({
+        bluetoothState: bluetoothState,
+        bluetoothOn: 0x0c === bluetoothState,
+      });
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+
+    BluetoothIO.discoveryStart();
   },
 
   // $TSI,15,0,322644,3,0,1,TK_0003,00:07:80:46:87:cd\r,20160815T123109,20130524T131700,20131023T173556,2\r\n
@@ -541,21 +573,14 @@ var BluetoothIOExample = React.createClass({
 
     let nmeaCountHex = '0x' + ('00000000' + this.state.nmeaCount.toString(16)).substr(-8);
 
-    let spinner = (Platform.OS === 'ios') ? (
-      <ActivityIndicatorIOS
-      animating={true}
-      style={styles.row}
-      size="small"
-      color={'blue'}
-      />
+    let spinner = this.state.isDiscovering ? (
+        <View
+        style={styles.row}>
+        <ActivityIndicator
+        color="#aa00aa" />
+        </View>
     ) : (
-      <View
-      style={styles.row}>
-      <ProgressBarAndroid
-      styleAttr="Normal"
-      color={'blue'}
-      />
-      </View>
+      null
     );
 
     return (
@@ -602,11 +627,15 @@ var BluetoothIOExample = React.createClass({
       </TouchableHighlight>
 
       <Text style={styles.welcome}>
-      NMEA{'[' + nmeaCountHex + ']=' + this.state.nmeaString}
+      nmea{'[' + nmeaCountHex + ']=' + this.state.nmeaString}
       </Text>
 
       <Text style={styles.welcome}>
       Position: {JSON.stringify(this.state.position)}
+      </Text>
+
+      <Text style={styles.welcome}>
+      nmeaId: {this.state.nmeaId}, nmeaType: {this.state.nmeaType}
       </Text>
 
       <Text style={styles.welcome}>

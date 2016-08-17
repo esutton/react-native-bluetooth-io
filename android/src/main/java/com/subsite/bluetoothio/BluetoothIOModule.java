@@ -152,6 +152,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
         WritableMap params = Arguments.createMap();
         params.putString("name", device.getName());
         params.putString("address", device.getAddress());
+        params .putBoolean("bondState", device.getBondState());
         sendEvent(Constants.EVENT_ON_BLUETOOTH_DISCOVERY_FOUND, params);
 
         // If it's already paired, skip it, because it's been listed already
@@ -374,6 +375,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
         WritableMap bluetoothDeviceMap = Arguments.createMap();
         bluetoothDeviceMap.putString("name", bluetoothDevice.getName());
         bluetoothDeviceMap.putString("address", bluetoothDevice.getAddress());
+        params.putBoolean("bondState", bluetoothDevice.getBondState());        
 
         // getUuids does not start a service discovery procedure to retrieve the UUIDs
         // from the remote device. Instead, the local cached copy of the service UUIDs are returned.
