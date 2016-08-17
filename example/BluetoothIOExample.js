@@ -353,12 +353,16 @@ var BluetoothIOExample = React.createClass({
         bluetoothState: bluetoothState,
         bluetoothOn: 0x0c === bluetoothState,
       });
+
+      if(0x0c === bluetoothState) {
+        BluetoothIO.discoveryStart();
+      }
+
     })
     .catch((err) => {
       console.log(err.message);
     });
 
-    BluetoothIO.discoveryStart();
   },
 
   // $TSI,15,0,322644,3,0,1,TK_0003,00:07:80:46:87:cd\r,20160815T123109,20130524T131700,20131023T173556,2\r\n
@@ -546,6 +550,12 @@ var BluetoothIOExample = React.createClass({
   renderRow(device: Object) {
     var chevronIcon = <Icon name="chevron-right" size={20} ></Icon>;
 
+    let deviceDisplayString = (null != device.name) ? (
+      device.name + ', ' + device.address
+    ) : (
+      device.address
+    );
+
     return (
       <View style={styles.row}>
 
@@ -555,7 +565,7 @@ var BluetoothIOExample = React.createClass({
       onHideUnderlay={this.props.onUnhighlight}>
 
       <View style={styles.row}>
-      <Text style={styles.welcome}>{device.name + ', ' + device.address}</Text>
+      <Text style={styles.welcome}>{deviceDisplayString}</Text>
       {chevronIcon}
       </View>
 
@@ -574,11 +584,11 @@ var BluetoothIOExample = React.createClass({
     let nmeaCountHex = '0x' + ('00000000' + this.state.nmeaCount.toString(16)).substr(-8);
 
     let spinner = this.state.isDiscovering ? (
-        <View
-        style={styles.row}>
-        <ActivityIndicator
-        color="#aa00aa" />
-        </View>
+      <View
+      style={styles.row}>
+      <ActivityIndicator
+      color="#aa00aa" />
+      </View>
     ) : (
       null
     );
