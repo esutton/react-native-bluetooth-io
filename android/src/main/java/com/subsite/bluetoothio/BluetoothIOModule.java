@@ -102,7 +102,7 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
 
     Activity activity = getCurrentActivity();
     if( null == activity ){
-      Log.d(TAG, String.format("*** Error cannot registe BroadcastReceiver null == activity"));
+      Log.d(TAG, String.format("*** Error cannot register BroadcastReceiver null == activity"));
       return;
     }
 
@@ -139,7 +139,36 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
           params.putString("name", stateName);
           sendEvent(Constants.EVENT_ON_BLUETOOTH_STATE_CHANGE, params);
 
+      // When discovery finds a device
+
+        } else if (action.equals(BluetoothDevice.ACTION_FOUND)) {
+
+        // Get the BluetoothDevice object from the Intent
+        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+        Log.d(TAG, String.format("BluetoothAdapter.ACTION_FOUND: %s %s, BondState=%d",
+        device.getName(), device.getAddress(), device.getBondState()));
+
+        WritableMap params = Arguments.createMap();
+        params.putString("name", device.getName());
+        params.putString("address", device.getAddress());
+        sendEvent(Constants.EVENT_ON_BLUETOOTH_DISCOVERY_FOUND, params);
+
+        // If it's already paired, skip it, because it's been listed already
+        if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
+          //mNewDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+          Log.d(TAG, String.format("Found new: %s %s", device.getName(), device.getAddress()));
         }
+        // When discovery is finished, change the Activity title
+      } else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
+
+        //setProgressBarIndeterminateVisibility(false);
+        //setTitle(R.string.select_device);
+        Log.d(TAG, String.format("BluetoothAdapter.ACTION_DISCOVERY_FINISHED"));
+
+        sendEvent(Constants.EVENT_ON_BLUETOOTH_DISCOVERY_STOP);
+
+      }
       }
     };
 
@@ -147,6 +176,15 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     // Register for broadcasts on BluetoothAdapter state change
     IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
     getCurrentActivity().registerReceiver(mReceiver, filter);
+
+    // Register for broadcasts when a device is discovered
+    filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+    getCurrentActivity().registerReceiver(mReceiver, filter);
+
+    // Register for broadcasts when discovery has finished
+    filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+    getCurrentActivity().registerReceiver(mReceiver, filter);
+
 
     // From: https://github.com/yamill/react-native-orientation/blob/master/android/src/main/java/com/github/yamill/orientation/OrientationModule.java
     LifecycleEventListener listener = new LifecycleEventListener() {
@@ -247,6 +285,11 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     getReactApplicationContext()
     .getJSModule(RCTNativeAppEventEmitter.class)
     .emit(eventName, params);
+  }
+    private void sendEvent(String eventName) {
+    getReactApplicationContext()
+    .getJSModule(RCTNativeAppEventEmitter.class)
+    .emit(eventName, null);
   }
 
 
@@ -381,8 +424,37 @@ public class BluetoothIOModule extends ReactContextBaseJavaModule implements ICo
     } else {
       Log.d(TAG, String.format("    Success getCurrentActivity is not null"));
     }
-
   }
+
+    @ReactMethod
+  public void discoveryStart() {
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    if (bluetoothAdapter == null) {
+      Log.d(TAG, "BluetoothAdapter not found in discoveryStart");
+      return;
+    }
+
+    // If we're already discovering, stop it
+    if (bluetoothAdapter.isDiscovering()) {
+      bluetoothAdapter.cancelDiscovery();
+    }
+
+    // Request discover from BluetoothAdapter
+    bluetoothAdapter.startDiscovery();
+    sendEvent(Constants.EVENT_ON_BLUETOOTH_DISCOVERY_START);
+  }
+
+    @ReactMethod
+  public void discoveryStop() {
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    if (bluetoothAdapter == null) {
+      Log.d(TAG, "BluetoothAdapter not found in discoveryStop");
+      return;
+    }
+    bluetoothAdapter.cancelDiscovery();
+  }
+
+
 
   // ToDo: Add BroadcastReceiver
   // http://stackoverflow.com/questions/9693755/detecting-state-changes-made-to-the-bluetoothadapter

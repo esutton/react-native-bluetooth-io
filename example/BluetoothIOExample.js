@@ -8,15 +8,20 @@ import React, { Component } from 'react';
 
 
 import {
+  ActivityIndicatorIOS,
   Alert,
   AppRegistry,
   ListView,
+  Platform,
+  ProgressBarAndroid,
   StyleSheet,
   Switch,
   Text,
   TouchableHighlight,
   View
 } from 'react-native';
+
+
 
 import BluetoothIO from 'react-native-bluetooth-io';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -69,9 +74,25 @@ var BluetoothIOExample = React.createClass({
       connectionStateName: '',
       dataSource: ds.cloneWithRows([]),
       deviceList: [],
-      position: null,
+      nmeaString: '',
+      nmeaCount: 0,
+      position:    {
+          coords: {
+            latitude: 0,
+            longitude: 0,
+            altitude: 0,
+            accuracy: 0,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+          },
+          timestamp: 0,
+        },
+
     };
   },
+
+
 
 
   scanBluetooth() {
@@ -132,7 +153,6 @@ var BluetoothIOExample = React.createClass({
       "$IIHDM,201.5,M*24",
       "$PRDID,-4.44,2.12,154.25*56"
     ];
-
     console.log('*** Test GPS NMEA ***');
     for (var i=0; i < s.length; i++) {
       console.log('*** NMEA s[' + i + '] : {' + s[i] + '}');
@@ -243,40 +263,58 @@ var BluetoothIOExample = React.createClass({
         longitude: lon,
         altitude: alt,
         accuracy: accuracyMeters,
-        altitudeAccuracy : null,
-        heading  : null,
-        speed  : null,
+        altitudeAccuracy: null,
+        heading: null,
+        speed: null,
       },
-      timestamp: 0,
+      timestamp: nmeaResponseGga.timestamp,
     };
   },
 
-  //  { sentence: 'GGA',
+  //  NMEA : { "$GPGGA,214719.00,3617.56959207,N,09718.53082482,W,2,17,0.6,318.932,M,-26.271,M,5.0,0133*75\r\n" }
+  //  {
+  //    sentence: 'GGA',
   //    type: 'fix',
-  //    timestamp: '',
-  //    lat: '',
-  //    latPole: '',
-  //    lon: '',
-  //    lonPole: '',
-  //    fixType: 'none',
-  //    numSat: 0,
-  //    horDilution: 0,
-  //    alt: 0,
+  //    timestamp: '214719.00',
+  //    lat: '3617.56959207',
+  //    latPole: 'N',
+  //    lon: '09718.53082482',
+  //    lonPole: 'W',
+  //    fixType: 'delta',
+  //    numSat: 17,
+  //    horDilution: 0.6,
+  //    alt: 318.932,
   //    altUnit: 'M',
-  //    geoidalSep: 0,
+  //    geoidalSep: -26.271,
   //    geoidalSepUnit: 'M',
-  //    differentialAge: 0,
-  //    differentialRefStn: '',
-  //    talker_id: 'GP' }
+  //    differentialAge: 5,
+  //    differentialRefStn: '0133',
+  //    talker_id: 'GP'
+  //  }
+  //
+  //  'estimatedAccuracy:', 0.96
   onNmeaRx(response) {
-    console.log(response);
+    let nmeaCount = this.state.nmeaCount + 1;
+    console.log('nmeaCount: ' + nmeaCount + ' : ' + response);
+
     if('GGA' === response.sentence ) {
       this.setState({
         position: this.nmeaGgaToPosition(response),
+        nmeaString: response,
+        nmeaCount: nmeaCount,
+      });
+    } else if('GST' === response.sentence ) {
+      const position = this.state.position;
+      position.timestamp = response.timestamp;
+      position.coords.accuracy = response.semiMajorAxis1SigmaErrorMeters;
+      this.setState({
+        position: this.nmeaGgaToPosition(response),
+        nmeaString: response,
+        nmeaCount: nmeaCount,
       });
     }
-  },
 
+  },
 
   // $TSI,15,0,322644,3,0,1,TK_0003,00:07:80:46:87:cd\r,20160815T123109,20130524T131700,20131023T173556,2\r\n
   onDataRx(e: Event) {
@@ -428,16 +466,30 @@ var BluetoothIOExample = React.createClass({
   },
 
   onRowPress(device: Object) {
-    let secure = false;
+
     let msg = 'Connect to: ' + device.name + ', ' + device.address;
     Alert.alert(
       msg,
       msg,
       [
         {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-        {text: 'OK', onPress: () => BluetoothIO.connect(device, secure)},
+        {text: 'OK', onPress: () => this.connectBluetooth(device)},
       ]
     )
+
+  },
+
+  connectBluetooth(device) {
+    // setState is async
+    this.setState({
+      bufferRx: '',
+      nmeaCount: 0,
+    },
+    function() {
+      // If here this.state.bufferRx is empty
+      let secure = false;
+      BluetoothIO.connect(device, secure);
+    });
 
   },
 
@@ -474,6 +526,24 @@ var BluetoothIOExample = React.createClass({
     let bluetoothStateString = '0x' + this.state.bluetoothState.toString(16);
     //console.log('this.state= ', this.state);
 
+    let nmeaCountHex = '0x' + ('00000000' + this.state.nmeaCount.toString(16)).substr(-8);
+
+    let spinner = (Platform.OS === 'ios') ? (
+      <ActivityIndicatorIOS
+      animating={true}
+      style={styles.row}
+      size="small"
+      color={'blue'} />
+      />
+    ) : (
+      <View
+      style={styles.row}>
+      <ProgressBarAndroid
+      styleAttr="Normal"
+      color={'blue'} />
+      </View>
+    );
+
     return (
       <View style={styles.container}>
 
@@ -496,7 +566,7 @@ var BluetoothIOExample = React.createClass({
       <TouchableHighlight style={styles.row}
       onPress={this.onScan} >
       <View style={styles.row} >
-
+      {spinner}
       <Icon name='bluetooth-searching' size={20}  color='blue'>
       </Icon>
       <Text style={styles.welcome}>
@@ -518,7 +588,15 @@ var BluetoothIOExample = React.createClass({
       </TouchableHighlight>
 
       <Text style={styles.welcome}>
+      NMEA{'[' + nmeaCountHex + ']=' + this.state.nmeaString}
+      </Text>
+
+      <Text style={styles.welcome}>
       Position: {JSON.stringify(this.state.position)}
+      </Text>
+
+      <Text style={styles.welcome}>
+      Timestamp: {this.state.position.timestamp}
       </Text>
 
       <Text style={styles.welcome}>

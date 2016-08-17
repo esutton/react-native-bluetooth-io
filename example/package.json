@@ -8,7 +8,7 @@
   "dependencies": {
     "base-64": "^0.1.0",
     "buffer": "^4.7.1",
-    "node-nmea": "git+https://github.com/jamesp/node-nmea.git",
+    "node-nmea": "git+https://github.com/esutton/node-nmea.git",
     "react": "15.2.1",
     "react-native": "^0.31.0",
     "react-native-bluetooth-io": "file:../",
