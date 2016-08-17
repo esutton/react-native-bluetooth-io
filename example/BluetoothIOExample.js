@@ -120,12 +120,12 @@ var BluetoothIOExample = React.createClass({
         bluetoothState: bluetoothState,
         bluetoothOn: 0x0c === bluetoothState,
       });
-
-
     })
     .catch((err) => {
       console.log(err.message);
     });
+
+    BluetoothIO.discoveryStart();
 
 
   },
@@ -546,14 +546,15 @@ var BluetoothIOExample = React.createClass({
       animating={true}
       style={styles.row}
       size="small"
-      color={'blue'} />
+      color={'blue'}
       />
     ) : (
       <View
       style={styles.row}>
       <ProgressBarAndroid
       styleAttr="Normal"
-      color={'blue'} />
+      color={'blue'}
+      />
       </View>
     );
 
